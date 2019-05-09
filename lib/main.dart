@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 // import 'package:flutter/rendering.dart';
 
 import './pages/auth.dart';
-
 import './pages/products_admin.dart';
 import './pages/products.dart';
 import './pages/product.dart';
@@ -17,13 +16,13 @@ void main() {
 class MyApp extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _MyAppState();
   }
 }
 
 class _MyAppState extends State<MyApp> {
   List<Map<String, dynamic>> _products = [];
+
   void _addProduct(Map<String, dynamic> product) {
     setState(() {
       _products.add(product);
@@ -31,11 +30,18 @@ class _MyAppState extends State<MyApp> {
     print(_products);
   }
 
+  void _updateProduct(int index, Map<String, dynamic> product) {
+    setState(() {
+      _products[index] = product;
+    });
+  }
+
   void _deleteProduct(int index) {
     setState(() {
       _products.removeAt(index);
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -50,7 +56,7 @@ class _MyAppState extends State<MyApp> {
         '/': (BuildContext context) => AuthPage(),
         '/products': (BuildContext context) => ProductsPage(_products),
         '/admin': (BuildContext context) =>
-            ProductsAdminPage(_addProduct, _deleteProduct),
+            ProductsAdminPage(_addProduct, _updateProduct, _deleteProduct, _products),
       },
       onGenerateRoute: (RouteSettings settings) {
         final List<String> pathElements = settings.name.split('/');
