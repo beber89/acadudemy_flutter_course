@@ -7,6 +7,8 @@ import 'package:scoped_model/scoped_model.dart';
 import '../widgets/ui_elements/title_default.dart';
 import '../models/product.dart';
 import '../scoped-models/products.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 
 class ProductPage extends StatelessWidget {
   final int productIndex;

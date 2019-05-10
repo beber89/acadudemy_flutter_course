@@ -6,8 +6,8 @@ import './pages/products_admin.dart';
 import './pages/products.dart';
 import './pages/product.dart';
 import './models/product.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:acadudemy_flutter_course/scoped-models/products.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -24,32 +24,15 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Product> _products = [];
-
-  void _addProduct(Product product) {
-    setState(() {
-      _products.add(product);
-    });
-    print(_products);
-  }
-
-  void _updateProduct(int index, Product product) {
-    setState(() {
-      _products[index] = product;
-    });
-  }
-
-  void _deleteProduct(int index) {
-    setState(() {
-      _products.removeAt(index);
-    });
-  }
+  final _bloc = ProductsBloc();
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModel<ProductsModel>(
-        model: ProductsModel(),
-        child: MaterialApp(
+    return StreamBuilder(
+      stream: _bloc.products,
+      initialData: [],
+      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+        return MaterialApp(
           // debugShowMaterialGrid: true,
           theme: ThemeData(
               brightness: Brightness.light,
@@ -79,6 +62,8 @@ class _MyAppState extends State<MyApp> {
             return MaterialPageRoute(
                 builder: (BuildContext context) => ProductsPage());
           },
-        ));
+        );
+      }
+    );
   }
 }

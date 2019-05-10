@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:scoped_model/scoped_model.dart';
 
 import '../widgets/helpers/ensure_visible.dart';
 import '../models/product.dart';
-import '../scoped-models/products.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 
 class ProductEditPage extends StatefulWidget {
   @override
@@ -89,16 +89,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
   }
 
   Widget _buildSubmitButton() {
-    return ScopedModelDescendant<ProductsModel>(
-      builder: (BuildContext context, Widget child, ProductsModel model) {
-        return RaisedButton(
+    return RaisedButton(
           child: Text('Save'),
           textColor: Colors.white,
-          onPressed: () => _submitForm(model.addProduct, model.updateProduct,
+          onPressed: () => _submitForm(.addProduct, model.updateProduct,
+          snapsh
               model.selectedProductIndex),
         );
-      },
-    );
   }
 
   Widget _buildPageContent(BuildContext context, Product product) {
