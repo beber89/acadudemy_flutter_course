@@ -5,6 +5,8 @@ import '../widgets/helpers/ensure_visible.dart';
 import '../models/product.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
+import 'package:bloc_pattern/bloc_pattern.dart';
+
 
 class ProductEditPage extends StatefulWidget {
   @override
@@ -24,6 +26,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final _titleFocusNode = FocusNode();
   final _descriptionFocusNode = FocusNode();
   final _priceFocusNode = FocusNode();
+  final ProductsBloc _bloc = BlocProvider.getBloc<ProductsBloc>();
 
   Widget _buildTitleTextField(Product product) {
     return EnsureVisibleWhenFocused(
@@ -92,9 +95,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     return RaisedButton(
           child: Text('Save'),
           textColor: Colors.white,
-          onPressed: () => _submitForm(.addProduct, model.updateProduct,
-          snapsh
-              model.selectedProductIndex),
+          onPressed: () => _submitForm(_bloc),
         );
   }
 
@@ -135,40 +136,33 @@ class _ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  void _submitForm(Function addProduct, Function updateProduct,
-      [int selectedProductIndex]) {
+  void _submitForm(ProductsBloc bloc) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
-    if (selectedProductIndex == null) {
-      addProduct(
+    bloc.productQueryEventSink.add(FormSubmitEvent(
         Product(
             title: _formData['title'],
             description: _formData['description'],
             price: _formData['price'],
             image: _formData['image']),
-      );
-    } else {
-      updateProduct(
-        Product(
-            title: _formData['title'],
-            description: _formData['description'],
-            price: _formData['price'],
-            image: _formData['image']),
-      );
-    }
-
+      )      
+    );
     Navigator.pushReplacementNamed(context, '/products');
   }
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModelDescendant<ProductsModel>(
-      builder: (BuildContext context, Widget child, ProductsModel model) {
-        final Widget pageContent =
-            _buildPageContent(context, model.selectedProduct);
-        return model.selectedProductIndex == null
+    return StreamBuilder(
+    stream: _bloc.selectedProduct,
+    builder: (BuildContext context, AsyncSnapshot<Product> prodSnapshot) {
+      return StreamBuilder(
+        stream: _bloc.selectedIndex,
+        builder: (BuildContext context, AsyncSnapshot<int> indexSnapshot){
+          final Widget pageContent = 
+          _buildPageContent(context, prodSnapshot.data);
+          return indexSnapshot.data == null
             ? pageContent
             : Scaffold(
                 appBar: AppBar(
@@ -176,7 +170,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 ),
                 body: pageContent,
               );
-      },
-    );
+        });
+    });
   }
 }

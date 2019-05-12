@@ -1,13 +1,20 @@
+//TODO: create a bloc event for first time run push to sink
+//TODO: First bug Gone, if second remains then 
+// Remove bloc_pattern and implement another one 
+//TODO: if nothing work create minimal example
+//TODO: check why products stream is throwing error related to listening
+// For that Remove rxdart and try ordinary broadcast
+
 import 'package:flutter/material.dart';
-// import 'package:flutter/rendering.dart';
 
 import './pages/auth.dart';
 import './pages/products_admin.dart';
 import './pages/products.dart';
 import './pages/product.dart';
-import './models/product.dart';
-import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
+import 'package:bloc_pattern/bloc_pattern.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
+import 'package:acadudemy_flutter_course/models/product.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -24,15 +31,15 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _bloc = ProductsBloc();
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: _bloc.products,
-      initialData: [],
-      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-        return MaterialApp(
+    return BlocProvider(
+      blocs: [
+        // DON'T use _bloc instantiated from another function
+        Bloc((i) => ProductsBloc()),
+      ],
+      child: MaterialApp(
           // debugShowMaterialGrid: true,
           theme: ThemeData(
               brightness: Brightness.light,
@@ -62,8 +69,7 @@ class _MyAppState extends State<MyApp> {
             return MaterialPageRoute(
                 builder: (BuildContext context) => ProductsPage());
           },
-        );
-      }
+        )
     );
   }
 }

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-import 'package:scoped_model/scoped_model.dart';
-
 import './product_edit.dart';
-import '../scoped-models/products.dart';
+import '../models/product.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
+import 'package:bloc_pattern/bloc_pattern.dart';
 
 class ProductListPage extends StatelessWidget {
+  final ProductsBloc _bloc = BlocProvider.getBloc<ProductsBloc>();
   Widget _buildEditButton(
-      BuildContext context, int index, ProductsModel model) {
+      BuildContext context, int index) {
     return IconButton(
       icon: Icon(Icons.edit),
       onPressed: () {
-        model.selectProduct(index);
+        _bloc.productQueryEventSink.add(SelectEvent(index));
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (BuildContext context) {
@@ -27,16 +27,21 @@ class ProductListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModelDescendant<ProductsModel>(
-      builder: (BuildContext context, Widget child, ProductsModel model) {
+    print("[Widget ProductListPage");
+    return StreamBuilder(
+      stream: _bloc.products,
+      builder: (BuildContext context, AsyncSnapshot<List<Product>> snapshot) {
+        final products = snapshot.data;
+        print("inside productlist snapshot");
+        print(products);
         return ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return Dismissible(
-              key: Key(model.products[index].title),
+              key: Key(products[index].title),
               onDismissed: (DismissDirection direction) {
                 if (direction == DismissDirection.endToStart) {
-                  model.selectProduct(index);
-                  model.deleteProduct();
+                  _bloc.productQueryEventSink.add(SelectEvent(index));
+                  _bloc.productQueryEventSink.add(DeleteEvent());
                 } else if (direction == DismissDirection.startToEnd) {
                   print('Swiped start to end');
                 } else {
@@ -48,21 +53,21 @@ class ProductListPage extends StatelessWidget {
                 children: <Widget>[
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: AssetImage(model.products[index].image),
+                      backgroundImage: AssetImage(products[index].image),
                     ),
-                    title: Text(model.products[index].title),
+                    title: Text(products[index].title),
                     subtitle:
-                        Text('\$${model.products[index].price.toString()}'),
-                    trailing: _buildEditButton(context, index, model),
+                        Text('\$${products[index].price.toString()}'),
+                    trailing: _buildEditButton(context, index),
                   ),
                   Divider()
                 ],
               ),
             );
           },
-          itemCount: model.products.length,
+          itemCount: products.length,
         );
-      },
+      }
     );
   }
 }

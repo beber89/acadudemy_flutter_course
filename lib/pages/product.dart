@@ -2,16 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:scoped_model/scoped_model.dart';
-
 import '../widgets/ui_elements/title_default.dart';
 import '../models/product.dart';
-import '../scoped-models/products.dart';
-import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
+import 'package:bloc_pattern/bloc_pattern.dart';
 
 class ProductPage extends StatelessWidget {
   final int productIndex;
+  final ProductsBloc _bloc = BlocProvider.getBloc<ProductsBloc>();
 
   ProductPage(this.productIndex);
 
@@ -44,9 +42,10 @@ class ProductPage extends StatelessWidget {
       print('Back button pressed!');
       Navigator.pop(context, false);
       return Future.value(false);
-    }, child: ScopedModelDescendant<ProductsModel>(
-      builder: (BuildContext context, Widget child, ProductsModel model) {
-        final Product product = model.products[productIndex];
+    }, child: StreamBuilder(
+      stream: _bloc.products,
+      builder: (BuildContext context, AsyncSnapshot<List<Product>> snapshot){
+        final Product product = snapshot.data[productIndex];
         return Scaffold(
           appBar: AppBar(
             title: Text(product.title),
@@ -71,6 +70,7 @@ class ProductPage extends StatelessWidget {
           ),
         );
       },
-    ));
+      )
+    );
   }
 }

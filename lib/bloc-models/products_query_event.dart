@@ -2,10 +2,22 @@ import 'package:acadudemy_flutter_course/models/product.dart';
 
 abstract class ProductsQueryEvent {}
 
-class DeleteEvent extends ProductsQueryEvent {
+class SelectEvent extends ProductsQueryEvent {
   final int _index;
   int get index => _index;
-  DeleteEvent(this._index);
+  SelectEvent(this._index);
+}
+
+class InitEvent extends ProductsQueryEvent {}
+
+class FormSubmitEvent extends ProductsQueryEvent {
+  final Product _product;
+  Product get product => _product;
+  FormSubmitEvent(this._product);
+}
+
+class DeleteEvent extends ProductsQueryEvent {
+  DeleteEvent();
 }
 
 class CreateEvent extends ProductsQueryEvent {
@@ -15,10 +27,7 @@ class CreateEvent extends ProductsQueryEvent {
 }
 
 class UpdateEvent extends ProductsQueryEvent {
-  final int _index;
   final Product _editedProduct;
-
-  int get index => _index;
   Product get updatedProduct => _editedProduct;
-  UpdateEvent(this._index, this._editedProduct);
+  UpdateEvent(this._editedProduct);
 }
