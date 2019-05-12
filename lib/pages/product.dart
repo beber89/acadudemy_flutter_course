@@ -5,11 +5,9 @@ import 'package:flutter/material.dart';
 import '../widgets/ui_elements/title_default.dart';
 import '../models/product.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
-import 'package:bloc_pattern/bloc_pattern.dart';
-
+import 'package:provider/provider.dart';
 class ProductPage extends StatelessWidget {
   final int productIndex;
-  final ProductsBloc _bloc = BlocProvider.getBloc<ProductsBloc>();
 
   ProductPage(this.productIndex);
 
@@ -43,7 +41,7 @@ class ProductPage extends StatelessWidget {
       Navigator.pop(context, false);
       return Future.value(false);
     }, child: StreamBuilder(
-      stream: _bloc.products,
+      stream: Provider.of<ProductsBloc>(context).products,
       builder: (BuildContext context, AsyncSnapshot<List<Product>> snapshot){
         final Product product = snapshot.data[productIndex];
         return Scaffold(

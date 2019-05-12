@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-
 import '../widgets/helpers/ensure_visible.dart';
 import '../models/product.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
-import 'package:bloc_pattern/bloc_pattern.dart';
-
+import 'package:provider/provider.dart';
 
 class ProductEditPage extends StatefulWidget {
   @override
@@ -26,7 +24,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final _titleFocusNode = FocusNode();
   final _descriptionFocusNode = FocusNode();
   final _priceFocusNode = FocusNode();
-  final ProductsBloc _bloc = BlocProvider.getBloc<ProductsBloc>();
 
   Widget _buildTitleTextField(Product product) {
     return EnsureVisibleWhenFocused(
@@ -91,12 +88,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  Widget _buildSubmitButton() {
+  Widget _buildSubmitButton(context) {
     return RaisedButton(
-          child: Text('Save'),
-          textColor: Colors.white,
-          onPressed: () => _submitForm(_bloc),
-        );
+      child: Text('Save'),
+      textColor: Colors.white,
+      onPressed: () {
+        _submitForm(Provider.of<ProductsBloc>(context));
+      } ,
+    );
   }
 
   Widget _buildPageContent(BuildContext context, Product product) {
@@ -120,15 +119,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               SizedBox(
                 height: 10.0,
               ),
-              _buildSubmitButton(),
-              // GestureDetector(
-              //   onTap: _submitForm,
-              //   child: Container(
-              //     color: Colors.green,
-              //     padding: EdgeInsets.all(5.0),
-              //     child: Text('My Button'),
-              //   ),
-              // )
+              _buildSubmitButton(context),
             ],
           ),
         ),
@@ -142,35 +133,35 @@ class _ProductEditPageState extends State<ProductEditPage> {
     }
     _formKey.currentState.save();
     bloc.productQueryEventSink.add(FormSubmitEvent(
-        Product(
-            title: _formData['title'],
-            description: _formData['description'],
-            price: _formData['price'],
-            image: _formData['image']),
-      )      
-    );
+      Product(
+          title: _formData['title'],
+          description: _formData['description'],
+          price: _formData['price'],
+          image: _formData['image']),
+    ));
     Navigator.pushReplacementNamed(context, '/products');
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-    stream: _bloc.selectedProduct,
-    builder: (BuildContext context, AsyncSnapshot<Product> prodSnapshot) {
-      return StreamBuilder(
-        stream: _bloc.selectedIndex,
-        builder: (BuildContext context, AsyncSnapshot<int> indexSnapshot){
-          final Widget pageContent = 
-          _buildPageContent(context, prodSnapshot.data);
-          return indexSnapshot.data == null
-            ? pageContent
-            : Scaffold(
-                appBar: AppBar(
-                  title: Text('Edit Product'),
-                ),
-                body: pageContent,
-              );
+    return StreamBuilder<List<Product>>(
+        stream: Provider.of<ProductsBloc>(context).products,
+        builder:
+            (BuildContext context, AsyncSnapshot<List<Product>> prodsSnapshot) {
+          return StreamBuilder<int>(
+              stream: Provider.of<ProductsBloc>(context).selectedIndex,
+              builder:
+                  (BuildContext context, AsyncSnapshot<int> indexSnapshot) {
+                return indexSnapshot.data == null
+                    ? _buildPageContent(context, null)
+                    : Scaffold(
+                        appBar: AppBar(
+                          title: Text('Edit Product'),
+                        ),
+                        body: _buildPageContent(
+                            context, prodsSnapshot.data[indexSnapshot.data]),
+                      );
+              });
         });
-    });
   }
 }

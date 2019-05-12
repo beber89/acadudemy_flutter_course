@@ -7,9 +7,6 @@ class SelectEvent extends ProductsQueryEvent {
   int get index => _index;
   SelectEvent(this._index);
 }
-
-class InitEvent extends ProductsQueryEvent {}
-
 class FormSubmitEvent extends ProductsQueryEvent {
   final Product _product;
   Product get product => _product;
