@@ -1,7 +1,6 @@
 import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/models/product.dart';
 import "package:bloc_pattern/bloc_pattern.dart";
-import 'package:rxdart/rxdart.dart';
 
 import "dart:async";
 
@@ -11,7 +10,7 @@ class ProductsBloc extends BlocBase {
   Product _selectedProduct;
 
   var _productsListStateController = 
-  BehaviorSubject<List<Product>>.seeded ([]) ;
+  StreamController<List<Product>>.broadcast();
   Sink<List<Product>> get _inProducts => _productsListStateController.sink;
   Stream<List<Product>> get products => _productsListStateController.stream;
 
@@ -36,19 +35,18 @@ class ProductsBloc extends BlocBase {
 
   void _mapEventToState(ProductsQueryEvent event) {
     if(event is CreateEvent) {
-      // _products.add(event.product);
-      _productsListStateController.value.add(event.product);
-      _inProducts.add(_productsListStateController.value);
+      _products.add(event.product);
+      _inProducts.add(_products);
     }
     else if (event is UpdateEvent) {
-      _productsListStateController.value[_selectedIndex] = event.updatedProduct;
-      _inProducts.add(_productsListStateController.value);
+      _products[_selectedIndex] = event.updatedProduct;
+      _inProducts.add(_products);
     } else if (event is DeleteEvent) {
-      _productsListStateController.value.removeAt(_selectedIndex);
-      _inProducts.add(_productsListStateController.value);
+      _products.removeAt(_selectedIndex);
+      _inProducts.add(_products);
     } else if(event is SelectEvent) {
       _selectedIndex = event.index;
-      _selectedProduct = _productsListStateController.value[_selectedIndex];
+      _selectedProduct = _products[_selectedIndex];
       inSelectedIndex.add(_selectedIndex);
       _inSelectedProduct.add(_selectedProduct);
     } else if (event is FormSubmitEvent) {
@@ -69,6 +67,5 @@ class ProductsBloc extends BlocBase {
     _productQueryEventController.close();
     _productSelectedIndexStateController.close();
     _selectedProductStateController.close();
-    // super.dispose();
   }
 }
