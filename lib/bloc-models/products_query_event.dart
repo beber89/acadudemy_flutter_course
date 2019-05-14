@@ -13,6 +13,13 @@ class FormSubmitEvent extends ProductsQueryEvent {
   FormSubmitEvent(this._product);
 }
 
+class ToggleItemFavouriteProperty extends ProductsQueryEvent {
+  final int _index;
+  int get index => _index;
+  ToggleItemFavouriteProperty(this._index);
+}
+class ToggleDisplayedItems extends ProductsQueryEvent {}
+
 class DeleteEvent extends ProductsQueryEvent {
   DeleteEvent();
 }

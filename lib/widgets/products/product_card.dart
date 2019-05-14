@@ -4,6 +4,11 @@ import './price_tag.dart';
 import './address_tag.dart';
 import '../ui_elements/title_default.dart';
 import '../../models/product.dart';
+import 'package:provider/provider.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
+import 'package:acadudemy_flutter_course/widgets/ui_elements/favourite_toggle.dart';
+
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -37,12 +42,14 @@ class ProductCard extends StatelessWidget {
           onPressed: () => Navigator.pushNamed<bool>(
               context, '/product/' + productIndex.toString()),
         ),
-        IconButton(
-          icon: Icon(Icons.favorite_border),
-          color: Colors.red,
-          onPressed: () => Navigator.pushNamed<bool>(
-              context, '/product/' + productIndex.toString()),
-        )
+        // IconButton(
+        //   icon: Icon(Icons.favorite_border),
+        //   color: Colors.red,
+        //   onPressed: () => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleItemFavouriteProperty(productIndex)),
+    // )
+        FavouriteToggle(
+            onPressed: () => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleItemFavouriteProperty(productIndex)) 
+          )
       ],
     );
   }

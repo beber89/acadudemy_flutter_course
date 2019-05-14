@@ -23,7 +23,7 @@ class Products extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Stream<List<Product>> productsStream = Provider.of<ProductsBloc>(context).products;
+    Stream<List<Product>> productsStream = Provider.of<ProductsBloc>(context).outDisplayedProducts;
     return StreamBuilder<List<Product>>(
       stream: productsStream,
       builder: (context, AsyncSnapshot<List<Product>> snapshot ){

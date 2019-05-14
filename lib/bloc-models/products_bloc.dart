@@ -7,11 +7,17 @@ import "dart:async";
 class ProductsBloc {
   List<Product> _products = [];
   int _selectedIndex;
+  bool _isFavouriteList=false;
 
   var _productsListStateController = 
   BehaviorSubject<List<Product>>();
   StreamSink<List<Product>> get _inProducts => _productsListStateController.sink;
   Stream<List<Product>> get products => _productsListStateController.stream;
+
+  BehaviorSubject<List<Product>> _displayedProductsListStateController = 
+  BehaviorSubject<List<Product>>();
+  StreamSink<List<Product>> get _inDisplayedProducts => _displayedProductsListStateController.sink;
+  Stream<List<Product>> get outDisplayedProducts => _displayedProductsListStateController.stream;
 
   BehaviorSubject<int> _productSelectedIndexStateController = 
   BehaviorSubject<int>();
@@ -24,6 +30,11 @@ class ProductsBloc {
 
   ProductsBloc()
   {
+    products.listen((_){
+      _inDisplayedProducts.add(
+        _products.where((prod) => !_isFavouriteList || prod.isFavourite).toList()
+      );
+    });
     _productQueryEventController.stream.listen(_mapEventToState);
   }
 
@@ -41,7 +52,15 @@ class ProductsBloc {
     } else if(event is SelectEvent) {
       _selectedIndex = event.index;
       inSelectedIndex.add(_selectedIndex);
-    } else if (event is FormSubmitEvent) {
+    } else if(event is ToggleDisplayedItems){
+      _isFavouriteList = !_isFavouriteList;
+      _inProducts.add(_products); // just to trigger displayedProducts
+    }
+    else if(event is ToggleItemFavouriteProperty){
+      _products[event.index] = _products[event.index].toggleFavourite();
+      _inProducts.add(_products);
+    }
+    else if (event is FormSubmitEvent) {
       if (_selectedIndex == null) {
         productQueryEventSink.add(CreateEvent(event.product));
       } else {
@@ -55,5 +74,6 @@ class ProductsBloc {
     _productsListStateController.close();
     _productQueryEventController.close();
     _productSelectedIndexStateController.close();
+    _displayedProductsListStateController.close();
   }
 }

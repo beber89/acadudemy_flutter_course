@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/products/products.dart';
-import '../models/product.dart';
+import 'package:provider/provider.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
+import 'package:acadudemy_flutter_course/widgets/ui_elements/favourite_toggle.dart';
 
-
-class ProductsPage extends StatelessWidget {
-
+class _ProductsPageState extends State<ProductsPage> {
+  bool isFavouriteList = false;
   Widget _buildSideDrawer(BuildContext context) {
     return Drawer(
       child: Column(
@@ -33,13 +35,30 @@ class ProductsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('EasyList'),
         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.favorite),
-            onPressed: () {},
+          // IconButton(
+          //   icon: Icon(isFavouriteList? Icons.favorite:Icons.favorite_border),
+          //   onPressed: () {
+          //     setState(() {
+          //       Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleDisplayedItems());
+          //       isFavouriteList = !isFavouriteList;
+          //     });
+          //   },
+          // ),
+          FavouriteToggle(
+            onPressed: () => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleDisplayedItems()) 
           )
         ],
       ),
       body: Products(),
     );
   }
+}
+
+class ProductsPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return _ProductsPageState();
+  }
+
 }

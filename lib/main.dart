@@ -1,5 +1,8 @@
 //TODO: BUG: related to view, in an assert statement
 
+// TODO: modify the favourite widget, consider actions for each of the two icons
+//   TODO: deal with toggle bug
+
 
 import 'package:flutter/material.dart';
 
