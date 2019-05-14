@@ -16,7 +16,9 @@ class FormSubmitEvent extends ProductsQueryEvent {
 class ToggleItemFavouriteProperty extends ProductsQueryEvent {
   final int _index;
   int get index => _index;
-  ToggleItemFavouriteProperty(this._index);
+  final bool _favourite;
+  bool get isFavourite => _favourite;
+  ToggleItemFavouriteProperty(this._index, this._favourite);
 }
 class ToggleDisplayedItems extends ProductsQueryEvent {}
 

@@ -8,6 +8,7 @@ class ProductsBloc {
   List<Product> _products = [];
   int _selectedIndex;
   bool _isFavouriteList=false;
+  Map<int, int> _modelIndexToDisplayIndex = {};
 
   var _productsListStateController = 
   BehaviorSubject<List<Product>>();
@@ -31,9 +32,10 @@ class ProductsBloc {
   ProductsBloc()
   {
     products.listen((_){
-      _inDisplayedProducts.add(
-        _products.where((prod) => !_isFavouriteList || prod.isFavourite).toList()
-      );
+      var displayedProds = _products.where((prod) => !_isFavouriteList || prod.isFavourite).toList();
+      _inDisplayedProducts.add(displayedProds);
+      displayedProds.
+
     });
     _productQueryEventController.stream.listen(_mapEventToState);
   }
@@ -57,7 +59,8 @@ class ProductsBloc {
       _inProducts.add(_products); // just to trigger displayedProducts
     }
     else if(event is ToggleItemFavouriteProperty){
-      _products[event.index] = _products[event.index].toggleFavourite();
+      _products[event.index] = event.isFavourite != _products[event.index].isFavourite
+      ?_products[event.index].toggleFavourite(): _products[event.index];
       _inProducts.add(_products);
     }
     else if (event is FormSubmitEvent) {

@@ -45,7 +45,7 @@ class _ProductsPageState extends State<ProductsPage> {
           //   },
           // ),
           FavouriteToggle(
-            onPressed: () => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleDisplayedItems()) 
+            onPressed: (_) => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleDisplayedItems()) 
           )
         ],
       ),

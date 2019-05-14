@@ -1,7 +1,7 @@
 //TODO: BUG: related to view, in an assert statement
 
-// TODO: modify the favourite widget, consider actions for each of the two icons
-//   TODO: deal with toggle bug
+// TODO: needs refactoring the model / index of model needs reconcide with view
+// TODO: do better job for wiring model with view consistently 
 
 
 import 'package:flutter/material.dart';

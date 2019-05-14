@@ -48,7 +48,7 @@ class ProductCard extends StatelessWidget {
         //   onPressed: () => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleItemFavouriteProperty(productIndex)),
     // )
         FavouriteToggle(
-            onPressed: () => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleItemFavouriteProperty(productIndex)) 
+            onPressed: (isFavourite) => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleItemFavouriteProperty(productIndex, isFavourite)) 
           )
       ],
     );

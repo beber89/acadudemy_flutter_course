@@ -22,8 +22,8 @@ class _FavouriteToggleState extends State<FavouriteToggle>{
       icon: Icon(isFavourite? Icons.favorite:Icons.favorite_border),
       onPressed: () {
         setState(() {
-          onToggle();
           isFavourite = !isFavourite;
+          onToggle(isFavourite);
           });
         },
       );
