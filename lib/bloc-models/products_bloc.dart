@@ -8,7 +8,6 @@ class ProductsBloc {
   List<Product> _products = [];
   int _selectedIndex;
   bool _isFavouriteList=false;
-  Map<int, int> _modelIndexToDisplayIndex = {};
 
   var _productsListStateController = 
   BehaviorSubject<List<Product>>();
@@ -34,8 +33,6 @@ class ProductsBloc {
     products.listen((_){
       var displayedProds = _products.where((prod) => !_isFavouriteList || prod.isFavourite).toList();
       _inDisplayedProducts.add(displayedProds);
-      displayedProds.
-
     });
     _productQueryEventController.stream.listen(_mapEventToState);
   }
