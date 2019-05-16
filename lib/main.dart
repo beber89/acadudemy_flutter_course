@@ -3,6 +3,10 @@
 // TODO: needs refactoring the model / index of model needs reconcide with view
 // TODO: do better job for wiring model with view consistently 
 
+//TODO: Things to Refactor:
+// - Change the way Max did to set selctedProduct to null after executing updateProduct.
+// - Add _id to product properties
+
 
 import 'package:flutter/material.dart';
 
