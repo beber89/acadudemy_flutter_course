@@ -49,7 +49,10 @@ class _ProductsPageState extends State<ProductsPage> {
           )
         ],
       ),
-      body: Products(),
+      body: RefreshIndicator(
+        onRefresh: Provider.of<ProductsBloc>(context).fetchProductsFromServer, 
+        child: Products(),
+        )
     );
   }
 }

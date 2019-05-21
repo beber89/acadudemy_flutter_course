@@ -3,9 +3,9 @@ import 'package:acadudemy_flutter_course/models/product.dart';
 abstract class ProductsQueryEvent {}
 
 class SelectEvent extends ProductsQueryEvent {
-  final int _index;
-  int get index => _index;
-  SelectEvent(this._index);
+  final String _id;
+  String get selectedId => _id;
+  SelectEvent(this._id);
 }
 class FormSubmitEvent extends ProductsQueryEvent {
   final Product _product;

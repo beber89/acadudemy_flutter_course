@@ -18,12 +18,15 @@ class _ProductEditPageState extends State<ProductEditPage> {
     'title': null,
     'description': null,
     'price': null,
-    'image': 'assets/food.jpg'
+    'image':
+        'https://upload.wikimedia.org/wikipedia/commons/6/68/Chocolatebrownie.JPG'
   };
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _titleFocusNode = FocusNode();
   final _descriptionFocusNode = FocusNode();
   final _priceFocusNode = FocusNode();
+  ProductsBloc bloc;
+  
 
   Widget _buildTitleTextField(Product product) {
     return EnsureVisibleWhenFocused(
@@ -89,13 +92,15 @@ class _ProductEditPageState extends State<ProductEditPage> {
   }
 
   Widget _buildSubmitButton(context) {
-    return RaisedButton(
-      child: Text('Save'),
-      textColor: Colors.white,
-      onPressed: () {
-        _submitForm(Provider.of<ProductsBloc>(context));
-      } ,
-    );
+    return StreamBuilder(
+        stream: bloc.selectedId,
+        builder: (context, snapshot) => RaisedButton(
+              child: Text('Save'),
+              textColor: Colors.white,
+              onPressed: () {
+                _submitForm(snapshot.data);
+              },
+            ));
   }
 
   Widget _buildPageContent(BuildContext context, Product product) {
@@ -127,39 +132,62 @@ class _ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  void _submitForm(ProductsBloc bloc) {
+  void _submitForm(String selectedId) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
-    bloc.productQueryEventSink.add(FormSubmitEvent(
-      Product(
-          title: _formData['title'],
-          description: _formData['description'],
-          price: _formData['price'],
-          image: _formData['image']),
-    ));
+    if (selectedId == null) {
+      bloc.productQueryEventSink.add(FormSubmitEvent(
+        Product(
+            id: "",
+            title: _formData['title'],
+            description: _formData['description'],
+            price: _formData['price'],
+            image: _formData['image']),
+      ));
+    } else {
+      bloc.productQueryEventSink.add(UpdateEvent(
+        Product(
+            id: "",
+            title: _formData['title'],
+            description: _formData['description'],
+            price: _formData['price'],
+            image: _formData['image']),
+      ));
+    }
     Navigator.pushReplacementNamed(context, '/products');
   }
 
   @override
   Widget build(BuildContext context) {
+    bloc = Provider.of<ProductsBloc>(context);
     return StreamBuilder<List<Product>>(
         stream: Provider.of<ProductsBloc>(context).products,
         builder:
             (BuildContext context, AsyncSnapshot<List<Product>> prodsSnapshot) {
-          return StreamBuilder<int>(
-              stream: Provider.of<ProductsBloc>(context).selectedIndex,
+          return StreamBuilder<String>(
+              stream: Provider.of<ProductsBloc>(context).selectedId,
               builder:
-                  (BuildContext context, AsyncSnapshot<int> indexSnapshot) {
-                return indexSnapshot.data == null
+                  (BuildContext context, AsyncSnapshot<String> idSnapshot) {
+                    // print("snapeshot "+idSnapshot.data);
+                    //FIXME:
+                    if(idSnapshot.data != null)
+                    {print(prodsSnapshot.data
+                                .where((prod) => idSnapshot.data == prod.id)
+                                .first);}
+                return idSnapshot.data == null
                     ? _buildPageContent(context, null)
                     : Scaffold(
                         appBar: AppBar(
                           title: Text('Edit Product'),
                         ),
                         body: _buildPageContent(
-                            context, prodsSnapshot.data[indexSnapshot.data]),
+                            context,
+                            prodsSnapshot.data
+                                .where((prod) => idSnapshot.data == prod.id)
+                                .first
+                            ),
                       );
               });
         });

@@ -7,27 +7,36 @@ import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
 
 class ProductListPage extends StatelessWidget {
+  ProductsBloc bloc;
   Widget _buildEditButton(BuildContext context, int index) {
-    return IconButton(
-      icon: Icon(Icons.edit),
-      onPressed: () {
-        Provider.of<ProductsBloc>(context)
-            .productQueryEventSink
-            .add(SelectEvent(index));
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (BuildContext context) {
-              return ProductEditPage();
-            },
-          ),
-        );
-      },
-    );
+    return StreamBuilder<List<Product>>(
+        stream: Provider.of<ProductsBloc>(context).products,
+        builder:
+            (BuildContext context, AsyncSnapshot<List<Product>> snapshot) =>
+                IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: () {
+                    // FIXME: needs a promise , might solve a bug
+                    // Provider.of<ProductsBloc>(context)
+                    //     .productQueryEventSink
+                    //     .add(SelectEvent(snapshot.data[index].id));
+                    bloc
+                        .selectItemWithId(snapshot.data[index].id)
+                        .then((_) => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (BuildContext context) {
+                                  return ProductEditPage();
+                                },
+                              ),
+                            ));
+                  },
+                ));
   }
 
   @override
   Widget build(BuildContext context) {
-    print("[Widget ProductListPage");
+    print("[Widget ProductListPage]");
+    bloc = Provider.of<ProductsBloc>(context);
     return StreamBuilder<List<Product>>(
         stream: Provider.of<ProductsBloc>(context).products,
         builder: (BuildContext context, AsyncSnapshot<List<Product>> snapshot) {
@@ -36,15 +45,12 @@ class ProductListPage extends StatelessWidget {
               ? ListView.builder(
                   itemBuilder: (BuildContext context, int index) {
                     return Dismissible(
-                      key: Key(products[index].title),
+                      key: Key(products[index].id),
                       onDismissed: (DismissDirection direction) {
                         if (direction == DismissDirection.endToStart) {
-                          Provider.of<ProductsBloc>(context)
-                              .productQueryEventSink
-                              .add(SelectEvent(index));
-                          Provider.of<ProductsBloc>(context)
-                              .productQueryEventSink
-                              .add(DeleteEvent());
+                          bloc.productQueryEventSink
+                              .add(SelectEvent(products[index].id));
+                          bloc.productQueryEventSink.add(DeleteEvent());
                         } else if (direction == DismissDirection.startToEnd) {
                           print('Swiped start to end');
                         } else {
@@ -57,7 +63,7 @@ class ProductListPage extends StatelessWidget {
                           ListTile(
                             leading: CircleAvatar(
                               backgroundImage:
-                                  AssetImage(products[index].image),
+                                  NetworkImage(products[index].image),
                             ),
                             title: Text(products[index].title),
                             subtitle:

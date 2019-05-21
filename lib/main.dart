@@ -1,4 +1,5 @@
-//TODO: BUG: related to view, in an assert statement
+//FIXME: BUG: related to view, in an assert statement
+// FIXME: Stays in EditProduct mode even when creating new product
 
 // TODO: needs refactoring the model / index of model needs reconcide with view
 // TODO: do better job for wiring model with view consistently 
@@ -6,6 +7,14 @@
 //TODO: Things to Refactor:
 // - Change the way Max did to set selctedProduct to null after executing updateProduct.
 // - Add _id to product properties
+
+
+//TODO: Stuff done in scoped_model branch 
+// [ ] http post, get, delete, put
+// [x] refresh spinner
+// [x] id of products from server
+// [ ] fix bug/exception handling
+// [ ] add loading feature while creating and updating product
 
 
 import 'package:flutter/material.dart';
@@ -51,7 +60,8 @@ class _MyAppState extends State<MyApp> {
               buttonColor: Colors.deepPurple),
           // home: AuthPage(),
           routes: {
-            '/': (BuildContext context) => AuthPage(),
+            // '/': (BuildContext context) => AuthPage(),
+            '/': (BuildContext context) => ProductsPage(),
             '/products': (BuildContext context) => ProductsPage(),
             '/admin': (BuildContext context) => ProductsAdminPage(),
           },
