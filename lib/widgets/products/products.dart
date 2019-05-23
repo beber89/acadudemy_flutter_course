@@ -16,6 +16,7 @@ class Products extends StatelessWidget {
         itemCount: products.length,
       );
     } else {
+      print('here');
       productCards = Container();
     }
     return productCards;
