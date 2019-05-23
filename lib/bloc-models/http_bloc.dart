@@ -3,6 +3,20 @@ import 'package:acadudemy_flutter_course/models/product.dart';
 import 'dart:convert';
 
 mixin HttpBloc {
+  Future<bool> deleteProduct(String selectedId) {
+    return http
+        .delete(
+            'https://flutter-products-5f0b8.firebaseio.com/products/${selectedId}.json')
+        .then((http.Response response) {
+          if(response.statusCode != 200 || response.statusCode != 201) {
+            return false;
+          }
+      return true;
+    }).catchError((error) {
+      return false;
+    });
+  }
+
   Future<List<Product>> fetchProducts() {
     return http
         .get('https://flutter-products-5f0b8.firebaseio.com/products.json')
@@ -26,8 +40,8 @@ mixin HttpBloc {
     });
   }
 
-  Future<Product> updateProduct(
-      String selectedId, String title, String description, String image, double price) {
+  Future<Product> updateProduct(String selectedId, String title,
+      String description, String image, double price) {
     final Map<String, dynamic> updateData = {
       'title': title,
       'description': description,
@@ -41,11 +55,11 @@ mixin HttpBloc {
             body: json.encode(updateData))
         .then((http.Response reponse) {
       final Product updatedProduct = Product(
-          id: selectedId,
-          title: title,
-          description: description,
-          image: image,
-          price: price,
+        id: selectedId,
+        title: title,
+        description: description,
+        image: image,
+        price: price,
       );
       return updatedProduct;
     }).catchError((error) {

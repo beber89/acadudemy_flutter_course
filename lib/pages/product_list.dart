@@ -6,7 +6,7 @@ import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
 
-class ProductListPage extends StatelessWidget {
+class _ProductListPageState extends State<ProductListPage> {
   ProductsBloc bloc;
   Widget _buildEditButton(BuildContext context, int index) {
     return StreamBuilder<List<Product>>(
@@ -20,15 +20,15 @@ class ProductListPage extends StatelessWidget {
                     // Provider.of<ProductsBloc>(context)
                     //     .productQueryEventSink
                     //     .add(SelectEvent(snapshot.data[index].id));
-                    bloc
-                        .selectItemWithId(snapshot.data[index].id)
-                        .then((_) => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (BuildContext context) {
-                                  return ProductEditPage();
-                                },
-                              ),
-                            ));
+                    bloc.selectItemWithId(snapshot.data[index].id).then((_) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (BuildContext context) {
+                            return ProductEditPage();
+                          },
+                        ),
+                      );
+                    });
                   },
                 ));
   }
@@ -41,6 +41,7 @@ class ProductListPage extends StatelessWidget {
         stream: Provider.of<ProductsBloc>(context).products,
         builder: (BuildContext context, AsyncSnapshot<List<Product>> snapshot) {
           final products = snapshot.data;
+          // if(isLoading) return Center(child: CircularProgressIndicator(),);
           return products != null
               ? ListView.builder(
                   itemBuilder: (BuildContext context, int index) {
@@ -48,9 +49,27 @@ class ProductListPage extends StatelessWidget {
                       key: Key(products[index].id),
                       onDismissed: (DismissDirection direction) {
                         if (direction == DismissDirection.endToStart) {
-                          bloc.productQueryEventSink
-                              .add(SelectEvent(products[index].id));
-                          bloc.productQueryEventSink.add(DeleteEvent());
+                          bloc.selectItemWithId(products[index].id).then((_) {
+                            bloc.deleteItem().then((success) {
+                              if (!success) {
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text('Something went wrong'),
+                                        content: Text('Please try again!'),
+                                        actions: <Widget>[
+                                          FlatButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: Text('Okay'),
+                                          )
+                                        ],
+                                      );
+                                    });
+                              }
+                            });
+                          });
                         } else if (direction == DismissDirection.startToEnd) {
                           print('Swiped start to end');
                         } else {
@@ -79,5 +98,13 @@ class ProductListPage extends StatelessWidget {
                 )
               : Container();
         });
+  }
+}
+
+class ProductListPage extends StatefulWidget {
+@override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return _ProductListPageState();
   }
 }

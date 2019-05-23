@@ -26,7 +26,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final _descriptionFocusNode = FocusNode();
   final _priceFocusNode = FocusNode();
   ProductsBloc bloc;
-  
+
+void dispose() {
+  super.dispose();
+  bloc.selectItemWithId(null);
+}
 
   Widget _buildTitleTextField(Product product) {
     return EnsureVisibleWhenFocused(
@@ -156,7 +160,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
             image: _formData['image']),
       ));
     }
+    // FIXME:
     Navigator.pushReplacementNamed(context, '/products');
+    
   }
 
   @override
@@ -170,25 +176,23 @@ class _ProductEditPageState extends State<ProductEditPage> {
               stream: Provider.of<ProductsBloc>(context).selectedId,
               builder:
                   (BuildContext context, AsyncSnapshot<String> idSnapshot) {
-                    // print("snapeshot "+idSnapshot.data);
-                    //FIXME:
-                    if(idSnapshot.data != null)
-                    {print(prodsSnapshot.data
-                                .where((prod) => idSnapshot.data == prod.id)
-                                .first);}
-                return idSnapshot.data == null
-                    ? _buildPageContent(context, null)
-                    : Scaffold(
-                        appBar: AppBar(
-                          title: Text('Edit Product'),
-                        ),
-                        body: _buildPageContent(
-                            context,
-                            prodsSnapshot.data
-                                .where((prod) => idSnapshot.data == prod.id)
-                                .first
-                            ),
-                      );
+                if (idSnapshot.connectionState != ConnectionState.waiting) {
+                  final selectedId = idSnapshot.data;
+                  return selectedId == null
+                      ? _buildPageContent(context, null)
+                      : Scaffold(
+                          appBar: AppBar(
+                            title: Text('Edit Product'),
+                          ),
+                          body: _buildPageContent(
+                              context,
+                              prodsSnapshot.data
+                                  .where((prod) => selectedId == prod.id)
+                                  .first),
+                        );
+                } else {
+                  return Center(child: CircularProgressIndicator(),);
+                }
               });
         });
   }
