@@ -6,7 +6,7 @@
 // - ui experience: delay one second before showing spinner
 
 //TODO: Stuff done by Max for Authentication
-// [ ] add signin / signup 
+// [x] add signin / signup
 
 //TODO: Stuff done in scoped_model branch by Max for http
 // [x] http post, get, delete, put
@@ -15,9 +15,6 @@
 // [x] add loading feature while creating and updating product
 // [x] fix bug/exception handling
 // [ ] add loading for deletion item
-
-
-
 
 import 'package:flutter/material.dart';
 
@@ -28,6 +25,7 @@ import './pages/product.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
 import 'bloc-models/ui_bloc.dart';
+import 'bloc-models/auth_bloc.dart';
 
 void main() {
   runApp(MyApp());
@@ -41,55 +39,53 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Provider<ProductsBloc>(
-      builder: (_) => ProductsBloc(),
-      dispose: (_, value) => value.dispose(),
-      child: Provider<UiBloc> (
-        builder: (_) => UiBloc(),
+        builder: (_) => ProductsBloc(),
         dispose: (_, value) => value.dispose(),
-        child: MaterialApp(
-          // debugShowMaterialGrid: true,
-          theme: ThemeData(
-              brightness: Brightness.light,
-              primarySwatch: Colors.deepOrange,
-              accentColor: Colors.deepPurple,
-              buttonColor: Colors.deepPurple),
-          // home: AuthPage(),
-          routes: {
-            // '/': (BuildContext context) => AuthPage(),
-            '/': (BuildContext context) => ProductsPage(),
-            '/products': (BuildContext context) => ProductsPage(),
-            '/admin': (BuildContext context) => ProductsAdminPage(),
-          },
-          onGenerateRoute: (RouteSettings settings) {
-            final List<String> pathElements = settings.name.split('/');
-            if (pathElements[0] != '') {
-              return null;
-            }
-            if (pathElements[1] == 'product') {
-              final int index = int.parse(pathElements[2]);
-              return MaterialPageRoute<bool>(
-                builder: (BuildContext context) => ProductPage(index),
-              );
-            }
-            return null;
-          },
-          onUnknownRoute: (RouteSettings settings) {
-            return MaterialPageRoute(
-                builder: (BuildContext context) => ProductsPage());
-          },
-        )
-      )
-    );
+        child: Provider<AuthBloc>(
+            builder: (_) => AuthBloc(),
+            dispose: (_, value) => value.dispose(),
+            child: Provider<UiBloc>(
+                builder: (_) => UiBloc(),
+                dispose: (_, value) => value.dispose(),
+                child: MaterialApp(
+                  // debugShowMaterialGrid: true,
+                  theme: ThemeData(
+                      brightness: Brightness.light,
+                      primarySwatch: Colors.deepOrange,
+                      accentColor: Colors.deepPurple,
+                      buttonColor: Colors.deepPurple),
+                  // home: AuthPage(),
+                  routes: {
+                    '/': (BuildContext context) => AuthPage(),
+                    '/products': (BuildContext context) => ProductsPage(),
+                    '/admin': (BuildContext context) => ProductsAdminPage(),
+                  },
+                  onGenerateRoute: (RouteSettings settings) {
+                    final List<String> pathElements = settings.name.split('/');
+                    if (pathElements[0] != '') {
+                      return null;
+                    }
+                    if (pathElements[1] == 'product') {
+                      final int index = int.parse(pathElements[2]);
+                      return MaterialPageRoute<bool>(
+                        builder: (BuildContext context) => ProductPage(index),
+                      );
+                    }
+                    return null;
+                  },
+                  onUnknownRoute: (RouteSettings settings) {
+                    return MaterialPageRoute(
+                        builder: (BuildContext context) => ProductsPage());
+                  },
+                ))));
   }
 }

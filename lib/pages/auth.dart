@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:acadudemy_flutter_course/models/auth.dart';
+import 'package:provider/provider.dart';
+import 'package:acadudemy_flutter_course/bloc-models/auth_bloc.dart';
+import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -8,12 +12,15 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
+  AuthBloc authBloc;
   final Map<String, dynamic> _formData = {
     'email': null,
     'password': null,
     'acceptTerms': false
   };
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _passwordTextController = TextEditingController();
+  AuthMode _authMode = AuthMode.Login;
 
   DecorationImage _buildBackgroundImage() {
     return DecorationImage(
@@ -47,6 +54,7 @@ class _AuthPageState extends State<AuthPage> {
       decoration: InputDecoration(
           labelText: 'Password', filled: true, fillColor: Colors.white),
       obscureText: true,
+      controller: _passwordTextController,
       validator: (String value) {
         if (value.isEmpty || value.length < 6) {
           return 'Password invalid';
@@ -54,6 +62,19 @@ class _AuthPageState extends State<AuthPage> {
       },
       onSaved: (String value) {
         _formData['password'] = value;
+      },
+    );
+  }
+
+  Widget _buildPasswordConfirmTextField() {
+    return TextFormField(
+      decoration: InputDecoration(
+          labelText: 'Confirm Password', filled: true, fillColor: Colors.white),
+      obscureText: true,
+      validator: (String value) {
+        if (_passwordTextController.text != value) {
+          return 'Passwords do not match.';
+        }
       },
     );
   }
@@ -70,19 +91,42 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  void _submitForm() {
+  void _submitForm(Function authenticate) async {
     if (!_formKey.currentState.validate() || !_formData['acceptTerms']) {
       return;
     }
     _formKey.currentState.save();
-    print(_formData);
-    Navigator.pushReplacementNamed(context, '/products');
+    Map<String, dynamic> successInformation;
+    successInformation = await authenticate(
+        _formData['email'], _formData['password'], _authMode);
+    if (successInformation['success']) {
+      Navigator.pushReplacementNamed(context, '/products');
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('An Error Occurred!'),
+            content: Text(successInformation['message']),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Okay'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550.0 ? 500.0 : deviceWidth * 0.95;
+    authBloc = Provider.of<AuthBloc>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Login'),
@@ -105,14 +149,46 @@ class _AuthPageState extends State<AuthPage> {
                       height: 10.0,
                     ),
                     _buildPasswordTextField(),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    _authMode == AuthMode.Signup
+                        ? _buildPasswordConfirmTextField()
+                        : Container(),
                     _buildAcceptSwitch(),
                     SizedBox(
                       height: 10.0,
                     ),
-                    RaisedButton(
-                      textColor: Colors.white,
-                      child: Text('LOGIN'),
-                      onPressed: _submitForm,
+                    FlatButton(
+                      child: Text(
+                          'Switch to ${_authMode == AuthMode.Login ? 'Signup' : 'Login'}'),
+                      onPressed: () {
+                        setState(() {
+                          _authMode = _authMode == AuthMode.Login
+                              ? AuthMode.Signup
+                              : AuthMode.Login;
+                        });
+                      },
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    StreamBuilder<bool>(
+                      stream: Provider.of<UiBloc>(context).outIsLoading,
+                      builder:
+                          (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                        return snapshot.connectionState ==
+                                ConnectionState.waiting
+                            ? CircularProgressIndicator()
+                            : RaisedButton(
+                                textColor: Colors.white,
+                                child: Text(_authMode == AuthMode.Login
+                                    ? 'LOGIN'
+                                    : 'SIGNUP'),
+                                onPressed: () =>
+                                    _submitForm(authBloc.authenticate),
+                              );
+                      },
                     ),
                   ],
                 ),
