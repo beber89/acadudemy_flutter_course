@@ -58,28 +58,7 @@ class ProductsBloc with HttpBloc {
   }
 
   void _mapEventToState(ProductsQueryEvent event) {
-    if (event is CreateEvent) {
-      final prod = event.product;
-      addProduct(prod.title, prod.description, prod.image, prod.price)
-          .then((Product newProduct) {
-        _products.add(newProduct);
-        _inProducts.add(_products);
-      });
-    } else if (event is UpdateEvent) {
-      int idx = _products.indexWhere((prod) => prod.id == _selectedId);
-      updateProduct(
-              _selectedId,
-              event.updatedProduct.title,
-              event.updatedProduct.description,
-              event.updatedProduct.image,
-              event.updatedProduct.price)
-          .then((prod) {
-        _products[idx] = prod;
-        _inProducts.add(_products);
-        _selectedId = null;
-        inSelectedId.add(null);
-      });
-    } else if (event is ToggleDisplayedItems) {
+    if (event is ToggleDisplayedItems) {
       _isFavouriteList = !_isFavouriteList;
       _inProducts.add(_products); // just to trigger displayedProducts
     } else if (event is ToggleItemFavouriteProperty) {
@@ -96,6 +75,36 @@ class ProductsBloc with HttpBloc {
         productQueryEventSink.add(SelectEvent(null));
       }
     }
+  }
+
+  Future<Product> _updateItem(Product updatedProduct) {
+    int idx = _products.indexWhere((prod) => prod.id == _selectedId);
+    return updateProduct(
+            _selectedId,
+            updatedProduct.title,
+            updatedProduct.description,
+            updatedProduct.image,
+            updatedProduct.price)
+        .then((prod) {
+      _products[idx] = prod;
+      _inProducts.add(_products);
+      _selectedId = null;
+      inSelectedId.add(null);
+      return prod;
+    });
+  }
+
+  Future<Product> submitItem(Product product) =>
+      _selectedId == null ? _createItem(product) : _updateItem(product);
+
+  Future<Product> _createItem(Product product) {
+    return addProduct(
+            product.title, product.description, product.image, product.price)
+        .then((Product newProduct) {
+      _products.add(newProduct);
+      _inProducts.add(_products);
+      return (newProduct);
+    });
   }
 
   Future<String> selectItemWithId(String itemId) {

@@ -5,13 +5,18 @@
 // - ui_bloc.dart implements isLoading feature for pages.
 // - ui experience: delay one second before showing spinner
 
+//TODO: Stuff done by Max for Authentication
+// [ ] add signin / signup 
 
-//TODO: Stuff done in scoped_model branch 
+//TODO: Stuff done in scoped_model branch by Max for http
 // [x] http post, get, delete, put
 // [x] refresh spinner
 // [x] id of products from server
-// [ ] fix bug/exception handling
-// [ ] add loading feature while creating, deleting and updating product
+// [x] add loading feature while creating and updating product
+// [x] fix bug/exception handling
+// [ ] add loading for deletion item
+
+
 
 
 import 'package:flutter/material.dart';
@@ -22,6 +27,7 @@ import './pages/products.dart';
 import './pages/product.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
+import 'bloc-models/ui_bloc.dart';
 
 void main() {
   runApp(MyApp());
@@ -48,7 +54,10 @@ class _MyAppState extends State<MyApp> {
     return Provider<ProductsBloc>(
       builder: (_) => ProductsBloc(),
       dispose: (_, value) => value.dispose(),
-      child: MaterialApp(
+      child: Provider<UiBloc> (
+        builder: (_) => UiBloc(),
+        dispose: (_, value) => value.dispose(),
+        child: MaterialApp(
           // debugShowMaterialGrid: true,
           theme: ThemeData(
               brightness: Brightness.light,
@@ -80,6 +89,7 @@ class _MyAppState extends State<MyApp> {
                 builder: (BuildContext context) => ProductsPage());
           },
         )
+      )
     );
   }
 }

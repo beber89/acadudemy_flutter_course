@@ -5,6 +5,7 @@ import '../models/product.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
 
 class ProductEditPage extends StatefulWidget {
   @override
@@ -26,11 +27,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final _descriptionFocusNode = FocusNode();
   final _priceFocusNode = FocusNode();
   ProductsBloc bloc;
+  UiBloc uiBloc;
 
-void dispose() {
-  super.dispose();
-  bloc.selectItemWithId(null);
-}
+  void dispose() {
+    super.dispose();
+    uiBloc.unloadScreen();
+    bloc.selectItemWithId(null);
+  }
 
   Widget _buildTitleTextField(Product product) {
     return EnsureVisibleWhenFocused(
@@ -96,15 +99,27 @@ void dispose() {
   }
 
   Widget _buildSubmitButton(context) {
-    return StreamBuilder(
-        stream: bloc.selectedId,
-        builder: (context, snapshot) => RaisedButton(
-              child: Text('Save'),
-              textColor: Colors.white,
-              onPressed: () {
-                _submitForm(snapshot.data);
-              },
-            ));
+    return StreamBuilder<bool>(
+        stream: uiBloc.outIsLoading,
+        builder: (BuildContext context, AsyncSnapshot<bool> uiSnapshot) =>
+            StreamBuilder(
+                stream: bloc.selectedId,
+                builder: (context, snapshot) {
+                  return (uiSnapshot.connectionState !=
+                              ConnectionState.waiting &&
+                          uiSnapshot.data)
+                      ? Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : RaisedButton(
+                          child: Text('Save'),
+                          textColor: Colors.white,
+                          onPressed: () {
+                            // FIXME: while editing onPress doesn't respond except when touching lower edge of button
+                            _submitForm();
+                          },
+                        );
+                }));
   }
 
   Widget _buildPageContent(BuildContext context, Product product) {
@@ -136,44 +151,60 @@ void dispose() {
     );
   }
 
-  void _submitForm(String selectedId) {
+  void _submitForm() {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
-    if (selectedId == null) {
-      bloc.productQueryEventSink.add(FormSubmitEvent(
+    uiBloc.loadScreen().then((_) {
+      return bloc.submitItem(
         Product(
             id: "",
             title: _formData['title'],
             description: _formData['description'],
             price: _formData['price'],
             image: _formData['image']),
-      ));
-    } else {
-      bloc.productQueryEventSink.add(UpdateEvent(
-        Product(
-            id: "",
-            title: _formData['title'],
-            description: _formData['description'],
-            price: _formData['price'],
-            image: _formData['image']),
-      ));
-    }
-    // FIXME:
-    Navigator.pushReplacementNamed(context, '/products');
-    
+      );
+    }).then((prod) { 
+      if (prod == null) {
+        uiBloc.unloadScreen();
+        showError();
+      } else {
+      Navigator.pushReplacementNamed(context, '/products');
+      }
+    });
+    // take care while putting navigation inside a promise.
+    // -> If view needed rerendering after a state change, while navigating, 
+    // -> errors of removed parent widgets will be thrown
+  }
+
+  void showError() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Something went wrong'),
+            content: Text('Please try again!'),
+            actions: <Widget>[
+              FlatButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Okay'),
+              )
+            ],
+          );
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     bloc = Provider.of<ProductsBloc>(context);
+    uiBloc = Provider.of<UiBloc>(context);
     return StreamBuilder<List<Product>>(
-        stream: Provider.of<ProductsBloc>(context).products,
+        stream: bloc.products,
         builder:
             (BuildContext context, AsyncSnapshot<List<Product>> prodsSnapshot) {
           return StreamBuilder<String>(
-              stream: Provider.of<ProductsBloc>(context).selectedId,
+              stream: bloc.selectedId,
               builder:
                   (BuildContext context, AsyncSnapshot<String> idSnapshot) {
                 if (idSnapshot.connectionState != ConnectionState.waiting) {
@@ -191,7 +222,9 @@ void dispose() {
                                   .first),
                         );
                 } else {
-                  return Center(child: CircularProgressIndicator(),);
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
               });
         });
