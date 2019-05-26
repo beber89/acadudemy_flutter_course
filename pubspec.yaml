@@ -49,6 +49,7 @@ flutter:
   assets:
     - assets/food.jpg
     - assets/background.jpg
+    - assets/config.json
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -6,12 +6,17 @@ import 'package:http/http.dart' as http;
 
 
 import "dart:async";
+import "dart:convert";
+import 'package:flutter/services.dart' show rootBundle;
 
 class AuthBloc {
 
-  final String _apiKey = "AIzaSyBl3sER1yMxzVU4StU7BO61Hbf_8u-cCMM";
+  String _apiKey;
 
   AuthBloc() {
+    rootBundle.loadString('assets/config.json').then((String str){
+      _apiKey = json.decode(str)["api_key"];
+    });
   }
 
 Future<Map<String, dynamic>> authenticate(String email, String password,
@@ -24,13 +29,13 @@ Future<Map<String, dynamic>> authenticate(String email, String password,
     http.Response response;
     if (mode == AuthMode.Login) {
       response = await http.post(
-        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key='+_apiKey,
+        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${_apiKey}',
         body: json.encode(authData),
         headers: {'Content-Type': 'application/json'},
       );
     } else {
       response = await http.post(
-        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key='+_apiKey,
+        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=${_apiKey}',
         body: json.encode(authData),
         headers: {'Content-Type': 'application/json'},
       );
