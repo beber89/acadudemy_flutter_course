@@ -10,6 +10,7 @@ class ProductsBloc with HttpBloc {
   int _selectedIndex;
   String _selectedId;
   bool _isFavouriteList = false;
+  String _token;
 
   var _productsListStateController = BehaviorSubject<List<Product>>();
   StreamSink<List<Product>> get _inProducts =>
@@ -38,6 +39,11 @@ class ProductsBloc with HttpBloc {
   StreamSink<ProductsQueryEvent> get productQueryEventSink =>
       _productQueryEventController.sink;
 
+  var _uiLoadStateController = BehaviorSubject<bool>();
+  StreamSink<bool> get _uiLoadSink =>
+      _uiLoadStateController.sink;
+  Stream<bool> get uiLoadStream => _uiLoadStateController.stream;
+
   ProductsBloc() {
     _selectedId = null;
     inSelectedId.add(_selectedId);
@@ -47,11 +53,15 @@ class ProductsBloc with HttpBloc {
       _inDisplayedProducts.add(displayedProds);
     });
     _productQueryEventController.stream.listen(_mapEventToState);
+  }
+
+  void assignToken(newToken) {
+    _token = newToken;
     fetchProductsFromServer();
   }
 
   Future<void> fetchProductsFromServer() {
-    return fetchProducts().then<void>((prods) {
+    return fetchProducts(_token).then<void>((prods) {
       _products = prods;
       _inProducts.add(prods);
     });
@@ -79,7 +89,9 @@ class ProductsBloc with HttpBloc {
 
   Future<Product> _updateItem(Product updatedProduct) {
     int idx = _products.indexWhere((prod) => prod.id == _selectedId);
+    _uiLoadSink.add(true);
     return updateProduct(
+      _token,
             _selectedId,
             updatedProduct.title,
             updatedProduct.description,
@@ -88,17 +100,18 @@ class ProductsBloc with HttpBloc {
         .then((prod) {
       _products[idx] = prod;
       _inProducts.add(_products);
-      _selectedId = null;
-      inSelectedId.add(null);
       return prod;
-    });
+    }).then((product) {
+      _uiLoadSink.add(false);
+      return product;
+    }).then((product) => product);
   }
 
   Future<Product> submitItem(Product product) =>
       _selectedId == null ? _createItem(product) : _updateItem(product);
 
   Future<Product> _createItem(Product product) {
-    return addProduct(
+    return addProduct(_token,
             product.title, product.description, product.image, product.price)
         .then((Product newProduct) {
       _products.add(newProduct);
@@ -116,9 +129,11 @@ class ProductsBloc with HttpBloc {
 
   Future<bool> deleteItem() {
     int idx = _products.indexWhere((prod) => prod.id == _selectedId);
-    return deleteProduct(_selectedId).then((bool success) {
+    return deleteProduct(_token, _selectedId).then((bool success) {
       _selectedId = null;
       inSelectedId.add(null);
+      print("success?");
+      print(success);
       if (success) {
         _products.removeAt(idx);
         _inProducts.add(_products);
@@ -134,5 +149,6 @@ class ProductsBloc with HttpBloc {
     _productSelectedIndexStateController.close();
     _displayedProductsListStateController.close();
     _productSelectedIdStateController.close();
+    _uiLoadStateController.close();
   }
 }

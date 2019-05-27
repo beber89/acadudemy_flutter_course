@@ -3,23 +3,24 @@ import 'package:acadudemy_flutter_course/models/product.dart';
 import 'dart:convert';
 
 mixin HttpBloc {
-  Future<bool> deleteProduct(String selectedId) {
+  Future<bool> deleteProduct(String token, String selectedId) {
     return http
         .delete(
-            'https://flutter-products-5f0b8.firebaseio.com/products/${selectedId}.json')
+            'https://flutter-products-5f0b8.firebaseio.com/products/${selectedId}.json?auth=${token}')
         .then((http.Response response) {
-          if(response.statusCode != 200 || response.statusCode != 201) {
-            return false;
-          }
+          print(response.statusCode != 200);
+      if (response.statusCode != 200 && response.statusCode != 201) {
+      }
       return true;
     }).catchError((error) {
       return false;
     });
   }
 
-  Future<List<Product>> fetchProducts() {
+  Future<List<Product>> fetchProducts(token) {
     return http
-        .get('https://flutter-products-5f0b8.firebaseio.com/products.json')
+        .get(
+            'https://flutter-products-5f0b8.firebaseio.com/products.json?auth=${token}')
         .then<List<Product>>((http.Response response) {
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
@@ -40,7 +41,7 @@ mixin HttpBloc {
     });
   }
 
-  Future<Product> updateProduct(String selectedId, String title,
+  Future<Product> updateProduct(String token, String selectedId, String title,
       String description, String image, double price) {
     final Map<String, dynamic> updateData = {
       'title': title,
@@ -51,7 +52,7 @@ mixin HttpBloc {
     };
     return http
         .put(
-            'https://flutter-products-5f0b8.firebaseio.com/products/${selectedId}.json',
+            'https://flutter-products-5f0b8.firebaseio.com/products/${selectedId}.json?auth=${token}',
             body: json.encode(updateData))
         .then((http.Response reponse) {
       final Product updatedProduct = Product(
@@ -67,8 +68,8 @@ mixin HttpBloc {
     });
   }
 
-  Future<Product> addProduct(
-      String title, String description, String image, double price) async {
+  Future<Product> addProduct(String token, String title, String description,
+      String image, double price) async {
     final Map<String, dynamic> productData = {
       'title': title,
       'description': description,
@@ -78,7 +79,7 @@ mixin HttpBloc {
     };
     try {
       final http.Response response = await http.post(
-          'https://flutter-products-5f0b8.firebaseio.com/products.json',
+          'https://flutter-products-5f0b8.firebaseio.com/products.json?auth=${token}',
           body: json.encode(productData));
 
       if (response.statusCode != 200 && response.statusCode != 201) {

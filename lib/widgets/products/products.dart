@@ -4,6 +4,8 @@ import './product_card.dart';
 import '../../models/product.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
+
 
 
 class Products extends StatelessWidget {
@@ -23,7 +25,7 @@ class Products extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Stream<List<Product>> productsStream = Provider.of<ProductsBloc>(context).outDisplayedProducts;
+    Stream<List<Product>> productsStream = Provider.of<AppBloc>(context).productsBloc.outDisplayedProducts;
     return StreamBuilder<List<Product>>(
       stream: productsStream,
       builder: (context, AsyncSnapshot<List<Product>> snapshot ){

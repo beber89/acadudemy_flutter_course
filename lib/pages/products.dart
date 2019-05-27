@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../widgets/products/products.dart';
 import 'package:provider/provider.dart';
-import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/widgets/ui_elements/favourite_toggle.dart';
+import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
 
 class _ProductsPageState extends State<ProductsPage> {
   bool isFavouriteList = false;
@@ -29,6 +29,12 @@ class _ProductsPageState extends State<ProductsPage> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _buildSideDrawer(context),
@@ -45,12 +51,12 @@ class _ProductsPageState extends State<ProductsPage> {
           //   },
           // ),
           FavouriteToggle(
-            onPressed: (_) => Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleDisplayedItems()) 
+            onPressed: (_) => Provider.of<AppBloc>(context).productsBloc.productQueryEventSink.add(ToggleDisplayedItems()) 
           )
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: Provider.of<ProductsBloc>(context).fetchProductsFromServer, 
+        onRefresh: Provider.of<AppBloc>(context).productsBloc.fetchProductsFromServer, 
         child: Products(),
         )
     );

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:acadudemy_flutter_course/models/auth.dart';
 import 'package:provider/provider.dart';
-import 'package:acadudemy_flutter_course/bloc-models/auth_bloc.dart';
 import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
+import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
+import 'package:acadudemy_flutter_course/bloc-models/auth_bloc.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -126,7 +127,7 @@ class _AuthPageState extends State<AuthPage> {
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550.0 ? 500.0 : deviceWidth * 0.95;
-    authBloc = Provider.of<AuthBloc>(context);
+    authBloc = Provider.of<AppBloc>(context).authBloc;
     return Scaffold(
       appBar: AppBar(
         title: Text('Login'),
@@ -174,7 +175,7 @@ class _AuthPageState extends State<AuthPage> {
                       height: 10.0,
                     ),
                     StreamBuilder<bool>(
-                      stream: Provider.of<UiBloc>(context).outIsLoading,
+                      stream: Provider.of<AppBloc>(context).uiBloc.outIsLoading,
                       builder:
                           (BuildContext context, AsyncSnapshot<bool> snapshot) {
                         return snapshot.connectionState ==

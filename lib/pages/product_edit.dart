@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../widgets/helpers/ensure_visible.dart';
 import '../models/product.dart';
-import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
+import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
 
 class ProductEditPage extends StatefulWidget {
   @override
@@ -31,7 +31,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   void dispose() {
     super.dispose();
-    uiBloc.unloadScreen();
     bloc.selectItemWithId(null);
   }
 
@@ -156,18 +155,15 @@ class _ProductEditPageState extends State<ProductEditPage> {
       return;
     }
     _formKey.currentState.save();
-    uiBloc.loadScreen().then((_) {
-      return bloc.submitItem(
+    bloc.submitItem(
         Product(
             id: "",
             title: _formData['title'],
             description: _formData['description'],
             price: _formData['price'],
             image: _formData['image']),
-      );
-    }).then((prod) { 
+      ).then((prod) { 
       if (prod == null) {
-        uiBloc.unloadScreen();
         showError();
       } else {
       Navigator.pushReplacementNamed(context, '/products');
@@ -197,8 +193,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    bloc = Provider.of<ProductsBloc>(context);
-    uiBloc = Provider.of<UiBloc>(context);
+    bloc = Provider.of<AppBloc>(context).productsBloc;
+    uiBloc = Provider.of<AppBloc>(context).uiBloc;
     return StreamBuilder<List<Product>>(
         stream: bloc.products,
         builder:

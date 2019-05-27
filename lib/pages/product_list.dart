@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 
 import './product_edit.dart';
 import '../models/product.dart';
-import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
+import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
+import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 
 class _ProductListPageState extends State<ProductListPage> {
   ProductsBloc bloc;
   UiBloc uiBloc;
   Widget _buildEditButton(BuildContext context, int index) {
     return StreamBuilder<List<Product>>(
-        stream: Provider.of<ProductsBloc>(context).products,
+        stream: Provider.of<AppBloc>(context).productsBloc.products,
         builder:
             (BuildContext context, AsyncSnapshot<List<Product>> snapshot) =>
                 IconButton(
@@ -37,8 +38,8 @@ class _ProductListPageState extends State<ProductListPage> {
   @override
   Widget build(BuildContext context) {
     print("[Widget ProductListPage]");
-    bloc = Provider.of<ProductsBloc>(context);
-    uiBloc = Provider.of<UiBloc>(context);
+    bloc = Provider.of<AppBloc>(context).productsBloc;
+    uiBloc = Provider.of<AppBloc>(context).uiBloc;
     return StreamBuilder<bool>(
         stream: uiBloc.outIsLoading,
         builder: (BuildContext context, AsyncSnapshot<bool> uiSnapshot) {

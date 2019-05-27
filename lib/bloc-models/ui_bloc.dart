@@ -5,21 +5,21 @@ import "dart:async";
 class UiBloc  {
 
   var _isLoadingStateController = BehaviorSubject<bool>();
-  StreamSink<bool> get _inIsLoading =>
+  StreamSink<bool> get inIsLoading =>
       _isLoadingStateController.sink;
   Stream<bool> get outIsLoading => _isLoadingStateController.stream;
 
   UiBloc() {
-    _inIsLoading.add(false);
+    inIsLoading.add(false);
   }
 
   Future<bool> loadScreen() {
-    _inIsLoading.add(true) ;
+    inIsLoading.add(true) ;
     return outIsLoading.first;
   }
 
   Future<bool> unloadScreen() {
-    _inIsLoading.add(false) ;
+    inIsLoading.add(false) ;
     return outIsLoading.first;
   }
 
