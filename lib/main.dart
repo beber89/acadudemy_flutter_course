@@ -8,7 +8,9 @@
 //TODO: Stuff done by Max for Authentication
 // [x] add signin / signup
 // [x] Auth token for post, get, delete, put
-// [ ] persistent token
+// [x] persistent token
+// [ ] signout
+// [ ] auto signout
 
 //TODO: Stuff done in scoped_model branch by Max for http
 // [x] http post, get, delete, put
@@ -25,6 +27,8 @@ import './pages/products_admin.dart';
 import './pages/products.dart';
 import './pages/product.dart';
 import 'package:provider/provider.dart';
+import 'bloc-models/app_bloc.dart';
+import 'models/user.dart';
 import 'bloc-models/app_bloc.dart';
 
 void main() {
@@ -51,35 +55,44 @@ class _MyAppState extends State<MyApp> {
         builder: (_) => AppBloc(),
         dispose: (_, value) => value.dispose(),
         child: MaterialApp(
-              // debugShowMaterialGrid: true,
-              theme: ThemeData(
-                  brightness: Brightness.light,
-                  primarySwatch: Colors.deepOrange,
-                  accentColor: Colors.deepPurple,
-                  buttonColor: Colors.deepPurple),
-              // home: AuthPage(),
-              routes: {
-                '/': (BuildContext context) => AuthPage(),
-                '/products': (BuildContext context) => ProductsPage(),
-                '/admin': (BuildContext context) => ProductsAdminPage(),
-              },
-              onGenerateRoute: (RouteSettings settings) {
-                final List<String> pathElements = settings.name.split('/');
-                if (pathElements[0] != '') {
-                  return null;
-                }
-                if (pathElements[1] == 'product') {
-                  final int index = int.parse(pathElements[2]);
-                  return MaterialPageRoute<bool>(
-                    builder: (BuildContext context) => ProductPage(index),
-                  );
-                }
-                return null;
-              },
-              onUnknownRoute: (RouteSettings settings) {
-                return MaterialPageRoute(
-                    builder: (BuildContext context) => ProductsPage());
-              },
-            ));
+          // debugShowMaterialGrid: true,
+          theme: ThemeData(
+              brightness: Brightness.light,
+              primarySwatch: Colors.deepOrange,
+              accentColor: Colors.deepPurple,
+              buttonColor: Colors.deepPurple),
+          // home: AuthPage(),
+          routes: {
+            '/': (BuildContext context) => StreamBuilder<User>(
+                stream: Provider.of<AppBloc>(context).authBloc.userStream,
+                builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return snapshot.data == null ? AuthPage() : ProductsPage();
+                }),
+            '/products': (BuildContext context) => ProductsPage(),
+            '/admin': (BuildContext context) => ProductsAdminPage(),
+          },
+          onGenerateRoute: (RouteSettings settings) {
+            final List<String> pathElements = settings.name.split('/');
+            if (pathElements[0] != '') {
+              return null;
+            }
+            if (pathElements[1] == 'product') {
+              final int index = int.parse(pathElements[2]);
+              return MaterialPageRoute<bool>(
+                builder: (BuildContext context) => ProductPage(index),
+              );
+            }
+            return null;
+          },
+          onUnknownRoute: (RouteSettings settings) {
+            return MaterialPageRoute(
+                builder: (BuildContext context) => ProductsPage());
+          },
+        ));
   }
 }

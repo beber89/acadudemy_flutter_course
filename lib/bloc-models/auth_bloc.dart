@@ -21,6 +21,7 @@ class AuthBloc {
     rootBundle.loadString('assets/config.json').then((String str) {
       _apiKey = json.decode(str)["api_key"];
     });
+    autoAuthenticate();
   }
   void autoAuthenticate() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
