@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:acadudemy_flutter_course/bloc-models/products_query_event.dart';
 import 'package:acadudemy_flutter_course/widgets/ui_elements/favourite_toggle.dart';
 import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
+import 'package:acadudemy_flutter_course/widgets/ui_elements/logout_list_tile.dart';
 
 class _ProductsPageState extends State<ProductsPage> {
   bool isFavouriteList = false;
@@ -22,7 +23,9 @@ class _ProductsPageState extends State<ProductsPage> {
             onTap: () {
               Navigator.pushReplacementNamed(context, '/admin');
             },
-          )
+          ),
+          Divider(),
+          LogoutListTile()
         ],
       ),
     );

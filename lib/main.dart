@@ -9,8 +9,9 @@
 // [x] add signin / signup
 // [x] Auth token for post, get, delete, put
 // [x] persistent token
-// [ ] signout
-// [ ] auto signout
+// [x] signout
+// [ ] auto signout: consider expires in
+// [ ] favourite appears by user, do it with server
 
 //TODO: Stuff done in scoped_model branch by Max for http
 // [x] http post, get, delete, put
@@ -29,7 +30,6 @@ import './pages/product.dart';
 import 'package:provider/provider.dart';
 import 'bloc-models/app_bloc.dart';
 import 'models/user.dart';
-import 'bloc-models/app_bloc.dart';
 
 void main() {
   runApp(MyApp());

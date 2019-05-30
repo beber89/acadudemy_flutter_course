@@ -55,16 +55,20 @@ class ProductsBloc with HttpBloc {
     _productQueryEventController.stream.listen(_mapEventToState);
   }
 
-  void assignToken(newToken) {
+  Future<Map<String, String>> assignToken(newToken) {
     _token = newToken;
-    fetchProductsFromServer();
+    if(newToken != null) {
+        return fetchProductsFromServer();
+    }
+    return Future.value(null);
   }
 
-  Future<void> fetchProductsFromServer() {
-    return fetchProducts(_token).then<void>((prods) {
+  Future<Map<String, String>> fetchProductsFromServer() {
+    return fetchProducts(_token).then<Map<String, String>>((prods) {
       _products = prods;
       _inProducts.add(prods);
-    });
+      return({'success': 'operation success'});
+    }).catchError((e) {return {'error': 'TOKEN_EXPIRED'};});
   }
 
   void _mapEventToState(ProductsQueryEvent event) {
@@ -132,8 +136,6 @@ class ProductsBloc with HttpBloc {
     return deleteProduct(_token, _selectedId).then((bool success) {
       _selectedId = null;
       inSelectedId.add(null);
-      print("success?");
-      print(success);
       if (success) {
         _products.removeAt(idx);
         _inProducts.add(_products);

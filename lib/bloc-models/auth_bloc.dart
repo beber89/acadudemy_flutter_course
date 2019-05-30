@@ -31,7 +31,19 @@ class AuthBloc {
       final String userId = prefs.getString('userId');
       _authenticatedUser = User(id: userId, email: userEmail, token: token);
       _userSink.add(_authenticatedUser);
+    } else {
+      _userSink.add(null);
     }
+  }
+
+  void logout() async {
+    print('Logout');
+    _authenticatedUser = null;
+    _userSink.add(_authenticatedUser);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('token');
+    prefs.remove('userEmail');
+    prefs.remove('userId');
   }
 
   Future<Map<String, dynamic>> authenticate(String email, String password,

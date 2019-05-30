@@ -15,7 +15,13 @@ class AppBloc {
   _ui = UiBloc()
   {
     _products.uiLoadStream.listen((isLoading) => _ui.inIsLoading.add(isLoading));
-    _auth.userStream.listen((newUser) => _products.assignToken(newUser.token));
+    _auth.userStream.listen((newUser) {
+      _products.assignToken(newUser != null? newUser.token:null).then((v) {
+        if(v!=null && v.containsKey('error')) {
+          _auth.logout();
+        }
+      });
+    });
   }
 
   AuthBloc get authBloc => _auth;

@@ -24,10 +24,14 @@ mixin HttpBloc {
         .then<List<Product>>((http.Response response) {
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
+      if(productListData['error'] == "Auth token is expired") {
+        throw new Exception("Auth token is expired") ;
+      }
       if (productListData == null) {
         return null;
       }
       productListData.forEach((String productId, dynamic productData) {
+        
         final Product product = Product(
           id: productId,
           title: productData['title'],
