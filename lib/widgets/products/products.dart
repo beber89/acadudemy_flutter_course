@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import './product_card.dart';
 import '../../models/product.dart';
-import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
 
@@ -18,7 +17,11 @@ class Products extends StatelessWidget {
         itemCount: products.length,
       );
     } else {
-      productCards = Container();
+      productCards = ListView.builder(
+        itemBuilder: (BuildContext context, int index) =>
+            Center(child: Text("No products to show")),
+        itemCount: 1,
+      );
     }
     return productCards;
   }
@@ -29,8 +32,13 @@ class Products extends StatelessWidget {
     return StreamBuilder<List<Product>>(
       stream: productsStream,
       builder: (context, AsyncSnapshot<List<Product>> snapshot ){
-        return snapshot.data != null? 
-        _buildProductList(snapshot.data) : Container();
+        return StreamBuilder<bool>(
+      stream: Provider.of<AppBloc>(context).uiBloc.outIsLoading,
+      builder: (context, AsyncSnapshot<bool> uiSnapshot ){
+        return uiSnapshot.connectionState == ConnectionState.waiting 
+        || uiSnapshot.data ? Center(child: CircularProgressIndicator())
+        : _buildProductList(snapshot.data);
+    });
     });
   }
 }

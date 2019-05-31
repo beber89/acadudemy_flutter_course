@@ -8,14 +8,19 @@ import "dart:convert";
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:acadudemy_flutter_course/models/user.dart';
+import 'http_bloc.dart';
 
-class AuthBloc {
+class AuthBloc with HttpBloc {
   String _apiKey;
   User _authenticatedUser;
 
   var _authenticatedUserStateController = BehaviorSubject<User>();
   StreamSink<User> get _userSink => _authenticatedUserStateController.sink;
   Stream<User> get userStream => _authenticatedUserStateController.stream;
+  var _uiLoadStateController = BehaviorSubject<bool>();
+  StreamSink<bool> get _uiLoadSink =>
+      _uiLoadStateController.sink;
+  Stream<bool> get uiLoadStream => _uiLoadStateController.stream;
 
   AuthBloc() {
     rootBundle.loadString('assets/config.json').then((String str) {
@@ -27,10 +32,16 @@ class AuthBloc {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String token = prefs.getString('token');
     if (token != null) {
-      final String userEmail = prefs.getString('userEmail');
-      final String userId = prefs.getString('userId');
-      _authenticatedUser = User(id: userId, email: userEmail, token: token);
-      _userSink.add(_authenticatedUser);
+      ensureTokenIsValid(token).then((isValid) {
+        if (!isValid) {
+          logout();
+        } else {
+          final String userEmail = prefs.getString('userEmail');
+          final String userId = prefs.getString('userId');
+          _authenticatedUser = User(id: userId, email: userEmail, token: token);
+          _userSink.add(_authenticatedUser);
+        }
+      });
     } else {
       _userSink.add(null);
     }
@@ -95,6 +106,7 @@ class AuthBloc {
   }
 
   void dispose() {
+    _uiLoadStateController.close();
     _authenticatedUserStateController.close();
   }
 }

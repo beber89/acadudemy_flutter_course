@@ -1,4 +1,6 @@
-//FIXME: BUG: related to view, in an assert statement
+// FIXME: [x] Cannot add new product if product list is empty
+// FIXME: [ ] Make isLoading false when navigating to any new page (onDispose)
+// FIXME: [x] Embed refresh feature when no products is there
 
 //TODO: Things to Refactor:
 // - bloc private values assigned automatically by listening to outstream
@@ -30,6 +32,8 @@ import './pages/product.dart';
 import 'package:provider/provider.dart';
 import 'bloc-models/app_bloc.dart';
 import 'models/user.dart';
+
+   
 
 void main() {
   runApp(MyApp());

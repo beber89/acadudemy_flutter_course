@@ -8,12 +8,24 @@ mixin HttpBloc {
         .delete(
             'https://flutter-products-5f0b8.firebaseio.com/products/${selectedId}.json?auth=${token}')
         .then((http.Response response) {
-          print(response.statusCode != 200);
-      if (response.statusCode != 200 && response.statusCode != 201) {
-      }
+      print(response.statusCode != 200);
+      if (response.statusCode != 200 && response.statusCode != 201) {}
       return true;
     }).catchError((error) {
       return false;
+    });
+  }
+
+  Future<bool> ensureTokenIsValid(token) {
+    return http
+        .get(
+            'https://flutter-products-5f0b8.firebaseio.com/products.json?auth=${token}')
+        .then<bool>((http.Response response) {
+      final Map<String, dynamic> productListData = json.decode(response.body);
+      if (productListData['error'] == "Auth token is expired") {
+        return false;
+      }
+      return true;
     });
   }
 
@@ -24,14 +36,10 @@ mixin HttpBloc {
         .then<List<Product>>((http.Response response) {
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
-      if(productListData['error'] == "Auth token is expired") {
-        throw new Exception("Auth token is expired") ;
-      }
       if (productListData == null) {
-        return null;
+        return [];
       }
       productListData.forEach((String productId, dynamic productData) {
-        
         final Product product = Product(
           id: productId,
           title: productData['title'],

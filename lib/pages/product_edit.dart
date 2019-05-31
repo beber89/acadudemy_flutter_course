@@ -6,6 +6,7 @@ import 'package:acadudemy_flutter_course/bloc-models/products_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
 import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
+import 'package:acadudemy_flutter_course/widgets/form_inputs/location.dart';
 
 class ProductEditPage extends StatefulWidget {
   @override
@@ -142,6 +143,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
               SizedBox(
                 height: 10.0,
               ),
+              // LocationInput(),
+              SizedBox(height: 10.0 ,),
               _buildSubmitButton(context),
             ],
           ),
