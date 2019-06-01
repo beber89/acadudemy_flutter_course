@@ -8,6 +8,9 @@ import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
 import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
 import 'package:acadudemy_flutter_course/widgets/form_inputs/location.dart';
 
+import 'dart:async';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 class ProductEditPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -126,6 +129,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
+    Completer<GoogleMapController> _controller = Completer();
+
+   final CameraPosition _kGooglePlex = CameraPosition(
+    target: LatLng(37.42796133580664, -122.085749655962),
+    zoom: 14.4746,
+  );
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -143,7 +152,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               SizedBox(
                 height: 10.0,
               ),
-              // LocationInput(),
+              LocationInput(),
               SizedBox(height: 10.0 ,),
               _buildSubmitButton(context),
             ],

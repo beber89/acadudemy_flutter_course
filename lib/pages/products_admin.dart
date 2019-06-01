@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import './product_edit.dart';
 import './product_list.dart';
 import 'package:acadudemy_flutter_course/widgets/ui_elements/logout_list_tile.dart';
+import '../widgets/form_inputs/location.dart';
 
 
 class ProductsAdminPage extends StatelessWidget {

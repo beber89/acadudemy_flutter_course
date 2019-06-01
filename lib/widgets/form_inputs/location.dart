@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-
 import '../helpers/ensure_visible.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 
 class LocationInput extends StatefulWidget {
   @override
@@ -14,12 +12,11 @@ class LocationInput extends StatefulWidget {
 }
 
 class _LocationInputState extends State<LocationInput> {
-  Uri _staticMapUri;
   final FocusNode _addressInputFocusNode = FocusNode();
   Completer<GoogleMapController> _controller = Completer();
 
   static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
+    target: LatLng(41.40338, 2.17403),
     zoom: 14.4746,
   );
 
@@ -64,14 +61,41 @@ class _LocationInputState extends State<LocationInput> {
         SizedBox(
           height: 10.0,
         ),
-        GoogleMap(
-        mapType: MapType.hybrid,
-        initialCameraPosition: _kGooglePlex,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-      ),
+        Container(
+            height: 300,
+            width: 500,
+            child: GoogleMap(
+              mapType: MapType.hybrid,
+              initialCameraPosition: _kGooglePlex,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+              },
+            ),
+          )
       ],
     );
+    
+    
+    // Container(
+    //     child: Center(
+    //         child: Padding(
+    //   padding: EdgeInsets.fromLTRB(10.0, 20, 10, 10),
+    //   child: Column(
+    //     mainAxisAlignment: MainAxisAlignment.start,
+    //     mainAxisSize: MainAxisSize.max,
+    //     children: <Widget>[
+    //       Container(
+    //         height: 340,
+    //         child: GoogleMap(
+    //           mapType: MapType.hybrid,
+    //           initialCameraPosition: _kGooglePlex,
+    //           onMapCreated: (GoogleMapController controller) {
+    //             _controller.complete(controller);
+    //           },
+    //         ),
+    //       )
+    //     ],
+    //   ),
+    // )));
   }
 }
