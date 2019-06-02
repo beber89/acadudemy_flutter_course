@@ -19,7 +19,7 @@ class LocationInput extends StatefulWidget {
 class _LocationInputState extends State<LocationInput> {
   final FocusNode _addressInputFocusNode = FocusNode();
   Completer<GoogleMapController> _controller = Completer();
-  CameraPosition _staticMapUri = CameraPosition(
+  final CameraPosition _initMapUri = CameraPosition(
     target: LatLng(41.40338, 2.17403),
     zoom: 14.4746,
   );
@@ -49,6 +49,7 @@ class _LocationInputState extends State<LocationInput> {
       '/maps/api/geocode/json',
       {'address': address, 'key': apiGoogleKey},
     );
+    print(apiGoogleKey);
     final http.Response response = await http.get(uri);
     final decodedResponse = json.decode(response.body);
     print(decodedResponse);
@@ -56,13 +57,14 @@ class _LocationInputState extends State<LocationInput> {
     final coords = decodedResponse['results'][0]['geometry']['location'];
 
 
-    final CameraPosition staticMapUri = CameraPosition(
+    final CameraPosition currentMapUri = CameraPosition(
     target: LatLng(coords['lat'], coords['lng']),
-    zoom: 14.4746,
+    zoom: 10.4746,
   );
+     final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(currentMapUri));
     setState(() {
       _addressInputController.text = formattedAddress;
-      _staticMapUri = staticMapUri;
     });
   }
 
@@ -91,7 +93,8 @@ class _LocationInputState extends State<LocationInput> {
             width: 500,
             child: GoogleMap(
               mapType: MapType.hybrid,
-              initialCameraPosition: _staticMapUri,
+              initialCameraPosition: _initMapUri,
+
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
               },

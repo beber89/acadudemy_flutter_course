@@ -10,7 +10,7 @@
         android:label="acadudemy_flutter_course"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="AIzaSyAcyrReXnRCbN8ZVjA8rV7Z9Q93XVfbvw0"/>
+               android:value="AIzaSyAOCg9p2DPQeppAce7qdm6UqEBSvV5Otak"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

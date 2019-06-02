@@ -1,16 +1,23 @@
 // FIXME: [ ] Make isLoading false when navigating to any new page (onDispose)
-
+// FIXME: [ ] No Fetch on sigin/up screen / throw exception if error happens bcuz of token
 //TODO: Things to Refactor:
 // - bloc private values assigned automatically by listening to outstream
-// - ui_bloc.dart implements isLoading feature for pages.
 // - ui experience: delay one second before showing spinner
+// - Signup screen: reload if load fails, then timeout and send error
+
+//TODO: Stuff done by Max for Maps
+// [x] Update map by location written on textinput
+// [ ] validator for location data
+// [ ] store location data on server
+// [ ] load location from server
 
 //TODO: Stuff done by Max for Authentication
 // [x] add signin / signup
 // [x] Auth token for post, get, delete, put
 // [x] persistent token
 // [x] signout
-// [ ] auto signout: consider expires in
+// [x] auto signout: consider expires in
+// -- Did it but not tested yet
 // [ ] favourite appears by user, do it with server
 
 //TODO: Stuff done in scoped_model branch by Max for http

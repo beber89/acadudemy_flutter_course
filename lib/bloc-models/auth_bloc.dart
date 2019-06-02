@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import "dart:async";
-import "dart:convert";
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:acadudemy_flutter_course/models/user.dart';
@@ -13,6 +12,7 @@ import 'http_bloc.dart';
 class AuthBloc with HttpBloc {
   String _apiKey;
   User _authenticatedUser;
+  Timer _authTimer;
 
   var _authenticatedUserStateController = BehaviorSubject<User>();
   StreamSink<User> get _userSink => _authenticatedUserStateController.sink;
@@ -28,18 +28,27 @@ class AuthBloc with HttpBloc {
     });
     rootBundle.loadString('assets/config.json').then((String str) {
       SharedPreferences.getInstance().then((prefs) 
-      => prefs.setString("api_google_key", json.decode(str)["google_api_key"]));
+      => prefs.setString("api_google_key", json.decode(str)["api_google_key"]));
     });
     autoAuthenticate();
   }
   void autoAuthenticate() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String token = prefs.getString('token');
-    if (token != null) {
+    final String expiryTimeString = prefs.getString('expiryTime');
+    if (token != null && expiryTimeString != null) {
+      final DateTime now = DateTime.now();
+      final parsedExpiryTime = DateTime.parse(expiryTimeString);
+      if (parsedExpiryTime.isBefore(now)) {
+        logout();
+        print("logging out from auto");
+        return;
+      }
       ensureTokenIsValid(token).then((isValid) {
         if (!isValid) {
           logout();
         } else {
+          print("token is valid");
           final String userEmail = prefs.getString('userEmail');
           final String userId = prefs.getString('userId');
           _authenticatedUser = User(id: userId, email: userEmail, token: token);
@@ -53,12 +62,16 @@ class AuthBloc with HttpBloc {
 
   void logout() async {
     print('Logout');
+    if(_authTimer != null) _authTimer.cancel();
     _authenticatedUser = null;
     _userSink.add(_authenticatedUser);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('token');
     prefs.remove('userEmail');
     prefs.remove('userId');
+  }
+  void setAuthTimeout(int time) {
+    _authTimer = Timer(Duration(seconds: time), logout);
   }
 
   Future<Map<String, dynamic>> authenticate(String email, String password,
@@ -95,10 +108,19 @@ class AuthBloc with HttpBloc {
           email: email,
           token: responseData['idToken']);
       _userSink.add(_authenticatedUser);
+
+      setAuthTimeout(int.parse(responseData['expiresIn']));
+
+      final DateTime now = DateTime.now();
+      final DateTime expiryTime =
+          now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
+
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('token', responseData['idToken']);
       prefs.setString('userEmail', email);
       prefs.setString('userId', responseData['localId']);
+      prefs.setString('expiryTime', expiryTime.toIso8601String());
+
     } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
       message = 'This email already exists.';
     } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
