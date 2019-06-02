@@ -3,6 +3,11 @@ import 'dart:async';
 
 import '../helpers/ensure_visible.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
 
 class LocationInput extends StatefulWidget {
   @override
@@ -14,11 +19,12 @@ class LocationInput extends StatefulWidget {
 class _LocationInputState extends State<LocationInput> {
   final FocusNode _addressInputFocusNode = FocusNode();
   Completer<GoogleMapController> _controller = Completer();
-
-  static final CameraPosition _kGooglePlex = CameraPosition(
+  CameraPosition _staticMapUri = CameraPosition(
     target: LatLng(41.40338, 2.17403),
     zoom: 14.4746,
   );
+  final TextEditingController _addressInputController = TextEditingController();
+
 
   @override
   void initState() {
@@ -32,21 +38,39 @@ class _LocationInputState extends State<LocationInput> {
     super.dispose();
   }
 
-  // void getStaticMap() {
-  //   final StaticMapProvider staticMapViewProvider =
-  //       StaticMapProvider('AIzaSyAcyrReXnRCbN8ZVjA8rV7Z9Q93XVfbvw0');
-  //   final Uri staticMapUri = staticMapViewProvider.getStaticUriWithMarkers(
-  //       [Marker('position', 'Position', 41.40338, 2.17403)],
-  //       center: Location(41.40338, 2.17403),
-  //       width: 500,
-  //       height: 300,
-  //       maptype: StaticMapViewType.roadmap);
-  //   setState(() {
-  //     _staticMapUri = staticMapUri;
-  //   });
-  // }
+  void getStaticMap(String address) async {
+    if (address.isEmpty) {
+      return;
+    }
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String apiGoogleKey = prefs.get("api_google_key");
+    final Uri uri = Uri.https(
+      'maps.googleapis.com',
+      '/maps/api/geocode/json',
+      {'address': address, 'key': apiGoogleKey},
+    );
+    final http.Response response = await http.get(uri);
+    final decodedResponse = json.decode(response.body);
+    print(decodedResponse);
+    final formattedAddress = decodedResponse['results'][0]['formatted_address'];
+    final coords = decodedResponse['results'][0]['geometry']['location'];
 
-  void _updateLocation() {}
+
+    final CameraPosition staticMapUri = CameraPosition(
+    target: LatLng(coords['lat'], coords['lng']),
+    zoom: 14.4746,
+  );
+    setState(() {
+      _addressInputController.text = formattedAddress;
+      _staticMapUri = staticMapUri;
+    });
+  }
+
+  void _updateLocation() {
+    if (!_addressInputFocusNode.hasFocus) {
+      getStaticMap(_addressInputController.text);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +80,7 @@ class _LocationInputState extends State<LocationInput> {
           focusNode: _addressInputFocusNode,
           child: TextFormField(
             focusNode: _addressInputFocusNode,
+            controller: _addressInputController,
           ),
         ),
         SizedBox(
@@ -66,7 +91,7 @@ class _LocationInputState extends State<LocationInput> {
             width: 500,
             child: GoogleMap(
               mapType: MapType.hybrid,
-              initialCameraPosition: _kGooglePlex,
+              initialCameraPosition: _staticMapUri,
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
               },
@@ -74,28 +99,5 @@ class _LocationInputState extends State<LocationInput> {
           )
       ],
     );
-    
-    
-    // Container(
-    //     child: Center(
-    //         child: Padding(
-    //   padding: EdgeInsets.fromLTRB(10.0, 20, 10, 10),
-    //   child: Column(
-    //     mainAxisAlignment: MainAxisAlignment.start,
-    //     mainAxisSize: MainAxisSize.max,
-    //     children: <Widget>[
-    //       Container(
-    //         height: 340,
-    //         child: GoogleMap(
-    //           mapType: MapType.hybrid,
-    //           initialCameraPosition: _kGooglePlex,
-    //           onMapCreated: (GoogleMapController controller) {
-    //             _controller.complete(controller);
-    //           },
-    //         ),
-    //       )
-    //     ],
-    //   ),
-    // )));
   }
 }

@@ -26,6 +26,10 @@ class AuthBloc with HttpBloc {
     rootBundle.loadString('assets/config.json').then((String str) {
       _apiKey = json.decode(str)["api_key"];
     });
+    rootBundle.loadString('assets/config.json').then((String str) {
+      SharedPreferences.getInstance().then((prefs) 
+      => prefs.setString("api_google_key", json.decode(str)["google_api_key"]));
+    });
     autoAuthenticate();
   }
   void autoAuthenticate() async {
