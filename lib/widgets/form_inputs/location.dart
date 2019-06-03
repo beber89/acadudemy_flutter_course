@@ -1,3 +1,4 @@
+import 'package:acadudemy_flutter_course/models/product.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -6,10 +7,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
-
+import '../../models/location_data.dart';
 
 class LocationInput extends StatefulWidget {
+  final Function setLocation;
+  final Product product;
+
+  LocationInput(this.setLocation, this.product);
   @override
   State<StatefulWidget> createState() {
     return _LocationInputState();
@@ -19,16 +23,24 @@ class LocationInput extends StatefulWidget {
 class _LocationInputState extends State<LocationInput> {
   final FocusNode _addressInputFocusNode = FocusNode();
   Completer<GoogleMapController> _controller = Completer();
-  final CameraPosition _initMapUri = CameraPosition(
+  CameraPosition _initMapUri = CameraPosition(
     target: LatLng(41.40338, 2.17403),
     zoom: 14.4746,
   );
   final TextEditingController _addressInputController = TextEditingController();
-
+  LocationData _locationData;
 
   @override
   void initState() {
     _addressInputFocusNode.addListener(_updateLocation);
+    if (widget.product != null) {
+      _initMapUri = CameraPosition(
+        target: LatLng(widget.product.location.latitude,
+            widget.product.location.longitude),
+        zoom: 14.4746,
+      );
+      _locationData = widget.product.location;
+    }
     super.initState();
   }
 
@@ -40,6 +52,7 @@ class _LocationInputState extends State<LocationInput> {
 
   void getStaticMap(String address) async {
     if (address.isEmpty) {
+      widget.setLocation(null);
       return;
     }
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -55,16 +68,20 @@ class _LocationInputState extends State<LocationInput> {
     print(decodedResponse);
     final formattedAddress = decodedResponse['results'][0]['formatted_address'];
     final coords = decodedResponse['results'][0]['geometry']['location'];
-
+    _locationData = LocationData(
+        address: formattedAddress,
+        latitude: coords['lat'],
+        longitude: coords['lng']);
+    widget.setLocation(_locationData);
 
     final CameraPosition currentMapUri = CameraPosition(
-    target: LatLng(coords['lat'], coords['lng']),
-    zoom: 10.4746,
-  );
-     final GoogleMapController controller = await _controller.future;
+      target: LatLng(_locationData.latitude, _locationData.longitude),
+      zoom: 10.4746,
+    );
+    final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(currentMapUri));
     setState(() {
-      _addressInputController.text = formattedAddress;
+      _addressInputController.text = _locationData.address;
     });
   }
 
@@ -83,23 +100,27 @@ class _LocationInputState extends State<LocationInput> {
           child: TextFormField(
             focusNode: _addressInputFocusNode,
             controller: _addressInputController,
+            validator:  (String value) {
+              if (_locationData == null || value.isEmpty) {
+                return 'No valid location found.';
+              }
+            },
           ),
         ),
         SizedBox(
           height: 10.0,
         ),
         Container(
-            height: 300,
-            width: 500,
-            child: GoogleMap(
-              mapType: MapType.hybrid,
-              initialCameraPosition: _initMapUri,
-
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-              },
-            ),
-          )
+          height: 300,
+          width: 500,
+          child: GoogleMap(
+            mapType: MapType.hybrid,
+            initialCameraPosition: _initMapUri,
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
+          ),
+        )
       ],
     );
   }

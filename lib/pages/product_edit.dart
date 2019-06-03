@@ -1,3 +1,4 @@
+import 'package:acadudemy_flutter_course/models/location_data.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/helpers/ensure_visible.dart';
@@ -7,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
 import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
 import 'package:acadudemy_flutter_course/widgets/form_inputs/location.dart';
+import 'package:acadudemy_flutter_course/bloc-models/auth_bloc.dart';
+import 'package:acadudemy_flutter_course/models/user.dart';
 
 import 'dart:async';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -24,7 +27,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
     'description': null,
     'price': null,
     'image':
-        'https://upload.wikimedia.org/wikipedia/commons/6/68/Chocolatebrownie.JPG'
+        'https://upload.wikimedia.org/wikipedia/commons/6/68/Chocolatebrownie.JPG',
+    'location': null,
   };
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _titleFocusNode = FocusNode();
@@ -32,6 +36,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final _priceFocusNode = FocusNode();
   ProductsBloc bloc;
   UiBloc uiBloc;
+  AuthBloc authBloc;
+
+  TextEditingController _titleTextController;
+  TextEditingController _descriptionTextController;
 
   void dispose() {
     super.dispose();
@@ -39,18 +47,20 @@ class _ProductEditPageState extends State<ProductEditPage> {
   }
 
   Widget _buildTitleTextField(Product product) {
+    _titleTextController = TextEditingController(text: product == null ? '' : product.title);
     return EnsureVisibleWhenFocused(
       focusNode: _titleFocusNode,
       child: TextFormField(
         focusNode: _titleFocusNode,
         decoration: InputDecoration(labelText: 'Product Title'),
-        initialValue: product == null ? '' : product.title,
         validator: (String value) {
           // if (value.trim().length <= 0) {
           if (value.isEmpty || value.length < 5) {
             return 'Title is required and should be 5+ characters long.';
           }
         },
+
+        controller: _titleTextController,
         onSaved: (String value) {
           _formData['title'] = value;
         },
@@ -59,19 +69,20 @@ class _ProductEditPageState extends State<ProductEditPage> {
   }
 
   Widget _buildDescriptionTextField(Product product) {
+    _descriptionTextController = TextEditingController(text: product == null ? '' : product.description);
     return EnsureVisibleWhenFocused(
       focusNode: _descriptionFocusNode,
       child: TextFormField(
         focusNode: _descriptionFocusNode,
         maxLines: 4,
         decoration: InputDecoration(labelText: 'Product Description'),
-        initialValue: product == null ? '' : product.description,
         validator: (String value) {
           // if (value.trim().length <= 0) {
           if (value.isEmpty || value.length < 10) {
             return 'Description is required and should be 10+ characters long.';
           }
         },
+        controller: _descriptionTextController,
         onSaved: (String value) {
           _formData['description'] = value;
         },
@@ -108,9 +119,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
             StreamBuilder(
                 stream: bloc.selectedId,
                 builder: (context, snapshot) {
-                  return (uiSnapshot.connectionState !=
+                  return StreamBuilder(
+                    stream: authBloc.userStream, 
+                    builder: (BuildContext context, AsyncSnapshot<User> userSnapshot) =>
+                    ((uiSnapshot.connectionState !=
                               ConnectionState.waiting &&
-                          uiSnapshot.data)
+                          uiSnapshot.data) || 
+                          userSnapshot.connectionState == ConnectionState.waiting)
                       ? Center(
                           child: CircularProgressIndicator(),
                         )
@@ -119,10 +134,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
                           textColor: Colors.white,
                           onPressed: () {
                             // FIXME: while editing onPress doesn't respond except when touching lower edge of button
-                            _submitForm();
+                            _submitForm(userSnapshot.data);
                           },
-                        );
+                        )
+                  );
                 }));
+  }
+  void _setLocation(LocationData locData) {
+    _formData['location'] = locData;
   }
 
   Widget _buildPageContent(BuildContext context, Product product) {
@@ -143,26 +162,30 @@ class _ProductEditPageState extends State<ProductEditPage> {
         margin: EdgeInsets.all(10.0),
         child: Form(
           key: _formKey,
-          child: ListView(
+          // FIXME: Using scrollview, textfields gets destroyed when scrolled out 
+          child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: targetPadding / 2),
-            children: <Widget>[
+            child: Column(
+              children: <Widget>[
               _buildTitleTextField(product),
               _buildDescriptionTextField(product),
               _buildPriceTextField(product),
               SizedBox(
                 height: 10.0,
               ),
-              LocationInput(),
+              LocationInput(_setLocation, product),
               SizedBox(height: 10.0 ,),
               _buildSubmitButton(context),
-            ],
+              ],
+            )
+            
           ),
         ),
       ),
     );
   }
 
-  void _submitForm() {
+  void _submitForm(User user) {
     if (!_formKey.currentState.validate()) {
       return;
     }
@@ -173,7 +196,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
             title: _formData['title'],
             description: _formData['description'],
             price: _formData['price'],
-            image: _formData['image']),
+            image: _formData['image'],
+            location: _formData['location'],
+            userEmail: user.email,
+            userId: user.id,
+            ),
       ).then((prod) { 
       if (prod == null) {
         showError();
@@ -207,6 +234,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   Widget build(BuildContext context) {
     bloc = Provider.of<AppBloc>(context).productsBloc;
     uiBloc = Provider.of<AppBloc>(context).uiBloc;
+    authBloc = Provider.of<AppBloc>(context).authBloc;
     return StreamBuilder<List<Product>>(
         stream: bloc.products,
         builder:

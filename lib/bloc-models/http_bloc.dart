@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:acadudemy_flutter_course/models/product.dart';
 import 'dart:convert';
+import 'package:acadudemy_flutter_course/models/product.dart';
 
 mixin HttpBloc {
   Future<bool> deleteProduct(String token, String selectedId) {
@@ -22,7 +23,7 @@ mixin HttpBloc {
             'https://flutter-products-5f0b8.firebaseio.com/products.json?auth=${token}')
         .then<bool>((http.Response response) {
       final Map<String, dynamic> productListData = json.decode(response.body);
-      if (productListData['error'] == "Auth token is expired") {
+      if (productListData != null && productListData['error'] == "Auth token is expired") {
         return false;
       }
       return true;
@@ -46,6 +47,9 @@ mixin HttpBloc {
           description: productData['description'],
           image: productData['image'],
           price: productData['price'],
+          userEmail: productData['userEmail'],
+          userId: productData['userId'],
+          location: productData['location'],
         );
         fetchedProductList.add(product);
       });
@@ -53,26 +57,37 @@ mixin HttpBloc {
     });
   }
 
-  Future<Product> updateProduct(String token, String selectedId, String title,
-      String description, String image, double price) {
+  Future<Product> updateProduct(String token, Product product) {
     final Map<String, dynamic> updateData = {
-      'title': title,
-      'description': description,
+      'title': product.title,
+      'description': product.description,
       'image':
           'https://upload.wikimedia.org/wikipedia/commons/6/68/Chocolatebrownie.JPG',
-      'price': price,
+      'price': product.price,
+      'location': {
+        'address': product.location.address,
+        'latitude': product.location.latitude,
+        'longitude': product.location.longitude
+        } ,
+      'userEmail': product.userEmail,
+      'userId': product.userId,
+      'isFavourite': product.isFavourite
     };
     return http
         .put(
-            'https://flutter-products-5f0b8.firebaseio.com/products/${selectedId}.json?auth=${token}',
+            'https://flutter-products-5f0b8.firebaseio.com/products/${product.id}.json?auth=${token}',
             body: json.encode(updateData))
         .then((http.Response reponse) {
       final Product updatedProduct = Product(
-        id: selectedId,
-        title: title,
-        description: description,
-        image: image,
-        price: price,
+        id: product.id,
+      title: product.title,
+      description: product.description,
+      image: product.image,
+      price: product.price,
+      location: product.location,
+      userEmail: product.userEmail,
+      userId: product.userId,
+      isFavourite: product.isFavourite
       );
       return updatedProduct;
     }).catchError((error) {
@@ -80,15 +95,24 @@ mixin HttpBloc {
     });
   }
 
-  Future<Product> addProduct(String token, String title, String description,
-      String image, double price) async {
+  Future<Product> addProduct(String token, Product product) async {
     final Map<String, dynamic> productData = {
-      'title': title,
-      'description': description,
+      'title': product.title,
+      'description': product.description,
       'image':
           'https://upload.wikimedia.org/wikipedia/commons/6/68/Chocolatebrownie.JPG',
-      'price': price,
+      'price': product.price,
+      'userEmail': product.userEmail,
+      'userId': product.userId,
+      'location': {
+        'address': product.location.address,
+        'latitude': product.location.latitude,
+        'longitude': product.location.longitude
+        } ,
+      'isFvaourite': product.isFavourite
     };
+    print("before tying ..");
+    print(json.encode(productData));
     try {
       final http.Response response = await http.post(
           'https://flutter-products-5f0b8.firebaseio.com/products.json?auth=${token}',
@@ -100,10 +124,13 @@ mixin HttpBloc {
       final Map<String, dynamic> responseData = json.decode(response.body);
       final Product newProduct = Product(
         id: responseData['name'],
-        title: title,
-        description: description,
-        image: image,
-        price: price,
+        title: product.title,
+        description: product.description,
+        image: product.image,
+        price: product.price,
+        userEmail: product.userEmail,
+        userId: product.userId,
+        location: product.location,
       );
       return newProduct;
     } catch (error) {

@@ -95,12 +95,8 @@ class ProductsBloc with HttpBloc {
     int idx = _products.indexWhere((prod) => prod.id == _selectedId);
     _uiLoadSink.add(true);
     return updateProduct(
-      _token,
-            _selectedId,
-            updatedProduct.title,
-            updatedProduct.description,
-            updatedProduct.image,
-            updatedProduct.price)
+      _token, updatedProduct
+            )
         .then((prod) {
       _products[idx] = prod;
       _inProducts.add(_products);
@@ -116,8 +112,7 @@ class ProductsBloc with HttpBloc {
 
   Future<Product> _createItem(Product product) {
     _uiLoadSink.add(true);
-    return addProduct(_token,
-            product.title, product.description, product.image, product.price)
+    return addProduct(_token, product)
         .then((Product newProduct) {
       _products.add(newProduct);
       _inProducts.add(_products);
