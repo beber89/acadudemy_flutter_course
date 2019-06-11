@@ -118,6 +118,7 @@ class AuthBloc with HttpBloc {
       final DateTime now = DateTime.now();
       final DateTime expiryTime =
           now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      print(expiryTime);
 
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('token', responseData['idToken']);

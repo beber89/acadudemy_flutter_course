@@ -13,7 +13,8 @@
 // [x] store location data on server
 // [x] load location from server
 // [x] get user's location 
-// Check what he done in the last two vids 
+// [x] displaying the address
+// [ ] show a map page with marker after clicking address on product detail page. 
 
 
 //TODO: Stuff done by Max for Authentication
