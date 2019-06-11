@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/location_data.dart';
+import 'package:location/location.dart' as geoloc;
 
 class LocationInput extends StatefulWidget {
   final Function setLocation;
@@ -22,6 +23,7 @@ class LocationInput extends StatefulWidget {
 
 class _LocationInputState extends State<LocationInput> {
   final FocusNode _addressInputFocusNode = FocusNode();
+  String _apiGoogleKey;
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition _initMapUri = CameraPosition(
     target: LatLng(41.40338, 2.17403),
@@ -40,7 +42,12 @@ class _LocationInputState extends State<LocationInput> {
         zoom: 14.4746,
       );
       _locationData = widget.product.location;
+      _addressInputController.text = _locationData.address;
     }
+    SharedPreferences.getInstance().then((prefs) {
+      print(prefs.get("api_google_key"));
+      _apiGoogleKey = prefs.get("api_google_key");
+    });
     super.initState();
   }
 
@@ -55,14 +62,12 @@ class _LocationInputState extends State<LocationInput> {
       widget.setLocation(null);
       return;
     }
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String apiGoogleKey = prefs.get("api_google_key");
     final Uri uri = Uri.https(
       'maps.googleapis.com',
       '/maps/api/geocode/json',
-      {'address': address, 'key': apiGoogleKey},
+      {'address': address, 'key': _apiGoogleKey},
     );
-    print(apiGoogleKey);
+    print(_apiGoogleKey);
     final http.Response response = await http.get(uri);
     final decodedResponse = json.decode(response.body);
     print(decodedResponse);
@@ -85,6 +90,32 @@ class _LocationInputState extends State<LocationInput> {
     });
   }
 
+Future<String> _getAddress(double lat, double lng) async {
+    final uri = Uri.https(
+      'maps.googleapis.com',
+      '/maps/api/geocode/json',
+      {
+        'latlng': '${lat.toString()},${lng.toString()}',
+        'key': _apiGoogleKey
+      },
+    );
+    final http.Response response = await http.get(uri);
+    print(lat);
+    print(lng);
+    final decodedResponse = json.decode(response.body);
+    print(decodedResponse);
+    final formattedAddress = decodedResponse['results'][0]['formatted_address'];
+    return formattedAddress;
+  }
+
+  void _getUserLocation() async {
+    final location = geoloc.Location();
+    final currentLocation = await location.getLocation();
+    final address = await _getAddress(
+        currentLocation.latitude, currentLocation.longitude);
+    getStaticMap(address);
+  }
+
   void _updateLocation() {
     if (!_addressInputFocusNode.hasFocus) {
       getStaticMap(_addressInputController.text);
@@ -100,12 +131,19 @@ class _LocationInputState extends State<LocationInput> {
           child: TextFormField(
             focusNode: _addressInputFocusNode,
             controller: _addressInputController,
-            validator:  (String value) {
+            validator: (String value) {
               if (_locationData == null || value.isEmpty) {
                 return 'No valid location found.';
               }
             },
           ),
+        ),
+        SizedBox(
+          height: 10.0,
+        ),
+        FlatButton(
+          child: Text('Locate User'),
+          onPressed: _getUserLocation,
         ),
         SizedBox(
           height: 10.0,

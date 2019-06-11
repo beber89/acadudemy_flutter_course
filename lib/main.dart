@@ -1,5 +1,7 @@
 // FIXME: [ ] Make isLoading false when navigating to any new page (onDispose)
-// FIXME: [ ] No Fetch on sigin/up screen / throw exception if error happens bcuz of token
+// FIXME: [x] throw exception if error happens bcuz of token
+// FIXME: [x] Navigate back to login when user is null
+// FIXME: [ ] No element error after editing location in existing product and submitting.
 //TODO: Things to Refactor:
 // - bloc private values assigned automatically by listening to outstream
 // - ui experience: delay one second before showing spinner
@@ -7,9 +9,12 @@
 
 //TODO: Stuff done by Max for Maps
 // [x] Update map by location written on textinput
-// [ ] validator for location data
-// [ ] store location data on server
-// [ ] load location from server
+// [x] validator for location data
+// [x] store location data on server
+// [x] load location from server
+// [x] get user's location 
+// Check what he done in the last two vids 
+
 
 //TODO: Stuff done by Max for Authentication
 // [x] add signin / signup

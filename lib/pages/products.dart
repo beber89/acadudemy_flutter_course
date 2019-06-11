@@ -1,3 +1,4 @@
+import 'package:acadudemy_flutter_course/pages/auth.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/products/products.dart';
@@ -39,30 +40,48 @@ class _ProductsPageState extends State<ProductsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: _buildSideDrawer(context),
-      appBar: AppBar(
-        title: Text('EasyList'),
-        actions: <Widget>[
-          // IconButton(
-          //   icon: Icon(isFavouriteList? Icons.favorite:Icons.favorite_border),
-          //   onPressed: () {
-          //     setState(() {
-          //       Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleDisplayedItems());
-          //       isFavouriteList = !isFavouriteList;
-          //     });
-          //   },
-          // ),
-          FavouriteToggle(
-            onPressed: (_) => Provider.of<AppBloc>(context).productsBloc.productQueryEventSink.add(ToggleDisplayedItems()) 
-          )
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: Provider.of<AppBloc>(context).productsBloc.fetchProductsFromServer, 
-        child: Products(),
-        )
-    );
+    return StreamBuilder(
+        stream: Provider.of<AppBloc>(context).authBloc.userStream,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if(snapshot.connectionState != ConnectionState.waiting 
+          && snapshot.data == null) {
+            return AuthPage();
+          }
+          return Scaffold(
+              drawer: _buildSideDrawer(context),
+              appBar: AppBar(
+                title: Text('EasyList'),
+                actions: <Widget>[
+                  // IconButton(
+                  //   icon: Icon(isFavouriteList? Icons.favorite:Icons.favorite_border),
+                  //   onPressed: () {
+                  //     setState(() {
+                  //       Provider.of<ProductsBloc>(context).productQueryEventSink.add(ToggleDisplayedItems());
+                  //       isFavouriteList = !isFavouriteList;
+                  //     });
+                  //   },
+                  // ),
+                  FavouriteToggle(
+                      onPressed: (_) => Provider.of<AppBloc>(context)
+                          .productsBloc
+                          .productQueryEventSink
+                          .add(ToggleDisplayedItems()))
+                ],
+              ),
+              body: RefreshIndicator(
+                onRefresh: () {
+                  return Provider.of<AppBloc>(context)
+                      .productsBloc
+                      .fetchProductsFromServer()
+                      .catchError((error) {
+                    print("catching ... ");
+                    Provider.of<AppBloc>(context).authBloc.addUser(null);
+                    return Navigator.pushReplacementNamed(context, '/');
+                  });
+                },
+                child: Products(),
+              ));
+        });
   }
 }
 
@@ -72,5 +91,4 @@ class ProductsPage extends StatefulWidget {
     // TODO: implement createState
     return _ProductsPageState();
   }
-
 }

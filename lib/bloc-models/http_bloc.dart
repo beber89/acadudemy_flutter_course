@@ -1,3 +1,4 @@
+import 'package:acadudemy_flutter_course/models/location_data.dart';
 import 'package:http/http.dart' as http;
 import 'package:acadudemy_flutter_course/models/product.dart';
 import 'dart:convert';
@@ -40,7 +41,18 @@ mixin HttpBloc {
       if (productListData == null) {
         return [];
       }
+      if(productListData.containsKey('error')) {
+        print("has error");
+        throw new Exception('There is an error');
+      }
+      print(productListData);
       productListData.forEach((String productId, dynamic productData) {
+        print(productData['location']['address']);
+        LocationData loc = LocationData(
+          address: productData['location']['address'],
+          latitude:  productData['location']['latitude'],
+          longitude: productData['location']['longitude']
+        );
         final Product product = Product(
           id: productId,
           title: productData['title'],
@@ -49,7 +61,7 @@ mixin HttpBloc {
           price: productData['price'],
           userEmail: productData['userEmail'],
           userId: productData['userId'],
-          location: productData['location'],
+          location: loc,
         );
         fetchedProductList.add(product);
       });
@@ -109,7 +121,7 @@ mixin HttpBloc {
         'latitude': product.location.latitude,
         'longitude': product.location.longitude
         } ,
-      'isFvaourite': product.isFavourite
+      'isFavourite': product.isFavourite
     };
     print("before tying ..");
     print(json.encode(productData));

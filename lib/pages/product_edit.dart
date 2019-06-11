@@ -38,8 +38,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
   UiBloc uiBloc;
   AuthBloc authBloc;
 
-  TextEditingController _titleTextController;
-  TextEditingController _descriptionTextController;
 
   void dispose() {
     super.dispose();
@@ -47,7 +45,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
   }
 
   Widget _buildTitleTextField(Product product) {
-    _titleTextController = TextEditingController(text: product == null ? '' : product.title);
     return EnsureVisibleWhenFocused(
       focusNode: _titleFocusNode,
       child: TextFormField(
@@ -59,8 +56,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             return 'Title is required and should be 5+ characters long.';
           }
         },
-
-        controller: _titleTextController,
+        initialValue: product == null ? '' : product.title,
         onSaved: (String value) {
           _formData['title'] = value;
         },
@@ -69,7 +65,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
   }
 
   Widget _buildDescriptionTextField(Product product) {
-    _descriptionTextController = TextEditingController(text: product == null ? '' : product.description);
     return EnsureVisibleWhenFocused(
       focusNode: _descriptionFocusNode,
       child: TextFormField(
@@ -82,7 +77,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             return 'Description is required and should be 10+ characters long.';
           }
         },
-        controller: _descriptionTextController,
+        initialValue: product == null ? '' : product.description,
         onSaved: (String value) {
           _formData['description'] = value;
         },

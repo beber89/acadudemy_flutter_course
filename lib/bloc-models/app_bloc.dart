@@ -16,7 +16,8 @@ class AppBloc {
   {
     _products.uiLoadStream.listen((isLoading) => _ui.inIsLoading.add(isLoading));
     _auth.userStream.listen((newUser) {
-      _products.assignToken(newUser != null? newUser.token:null);
+      _products.assignToken(newUser != null? newUser.token:null)
+      .catchError((_) => _auth.addUser(null));
     });
   }
 

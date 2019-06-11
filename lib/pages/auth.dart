@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:acadudemy_flutter_course/models/auth.dart';
 import 'package:provider/provider.dart';
-import 'package:acadudemy_flutter_course/bloc-models/ui_bloc.dart';
 import 'package:acadudemy_flutter_course/bloc-models/app_bloc.dart';
 import 'package:acadudemy_flutter_course/bloc-models/auth_bloc.dart';
 

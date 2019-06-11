@@ -55,20 +55,35 @@ class ProductsBloc with HttpBloc {
     _productQueryEventController.stream.listen(_mapEventToState);
   }
 
-  void assignToken(newToken) async {
+  Future<void> assignToken(newToken) async {
     _token = newToken;
     if(newToken != null) {
+      try {
         await fetchProductsFromServer();
+      } on Exception catch(error) {
+        print("executing error 2");
+        throw error;
+      }    
     }
   }
 
-  Future<void> fetchProductsFromServer() {
+  Future<void> fetchProductsFromServer() async{
     _uiLoadSink.add(true);
-    return fetchProducts(_token).then((prods) {
+    try {
+      print("executing that");
+      var prods = await fetchProducts(_token);
+      print("executing this");
       _products = prods;
       _inProducts.add(prods);
       _uiLoadSink.add(false);
-    });
+    } on Exception catch (error) {
+      throw error;
+    } 
+    // return fetchProducts(_token).then((prods) {
+    //   _products = prods;
+    //   _inProducts.add(prods);
+    //   _uiLoadSink.add(false);
+    // });
   }
 
   void _mapEventToState(ProductsQueryEvent event) {

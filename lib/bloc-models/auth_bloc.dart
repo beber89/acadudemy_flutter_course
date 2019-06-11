@@ -18,8 +18,7 @@ class AuthBloc with HttpBloc {
   StreamSink<User> get _userSink => _authenticatedUserStateController.sink;
   Stream<User> get userStream => _authenticatedUserStateController.stream;
   var _uiLoadStateController = BehaviorSubject<bool>();
-  StreamSink<bool> get _uiLoadSink =>
-      _uiLoadStateController.sink;
+  StreamSink<bool> get _uiLoadSink => _uiLoadStateController.sink;
   Stream<bool> get uiLoadStream => _uiLoadStateController.stream;
 
   AuthBloc() {
@@ -27,10 +26,13 @@ class AuthBloc with HttpBloc {
       _apiKey = json.decode(str)["api_key"];
     });
     rootBundle.loadString('assets/config.json').then((String str) {
-      SharedPreferences.getInstance().then((prefs) 
-      => prefs.setString("api_google_key", json.decode(str)["api_google_key"]));
+      SharedPreferences.getInstance().then((prefs) => prefs.setString(
+          "api_google_key", json.decode(str)["api_google_key"]));
     });
     autoAuthenticate();
+  }
+  void addUser(user) {
+    _userSink.add(user);
   }
   void autoAuthenticate() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -44,17 +46,18 @@ class AuthBloc with HttpBloc {
         print("logging out from auto");
         return;
       }
-      ensureTokenIsValid(token).then((isValid) {
-        if (!isValid) {
-          logout();
-        } else {
-          print("token is valid");
-          final String userEmail = prefs.getString('userEmail');
-          final String userId = prefs.getString('userId');
-          _authenticatedUser = User(id: userId, email: userEmail, token: token);
-          _userSink.add(_authenticatedUser);
-        }
-      });
+      final String userEmail = prefs.getString('userEmail');
+      final String userId = prefs.getString('userId');
+      _authenticatedUser = User(id: userId, email: userEmail, token: token);
+      _userSink.add(_authenticatedUser);
+      // ensureTokenIsValid(token).then((isValid) {
+      //   if (!isValid) {
+      //     logout();
+      //   } else {
+      //     print("token is valid");
+
+      //   }
+      // });
     } else {
       _userSink.add(null);
     }
@@ -62,7 +65,7 @@ class AuthBloc with HttpBloc {
 
   void logout() async {
     print('Logout');
-    if(_authTimer != null) _authTimer.cancel();
+    if (_authTimer != null) _authTimer.cancel();
     _authenticatedUser = null;
     _userSink.add(_authenticatedUser);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -70,6 +73,7 @@ class AuthBloc with HttpBloc {
     prefs.remove('userEmail');
     prefs.remove('userId');
   }
+
   void setAuthTimeout(int time) {
     _authTimer = Timer(Duration(seconds: time), logout);
   }
@@ -120,7 +124,6 @@ class AuthBloc with HttpBloc {
       prefs.setString('userEmail', email);
       prefs.setString('userId', responseData['localId']);
       prefs.setString('expiryTime', expiryTime.toIso8601String());
-
     } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
       message = 'This email already exists.';
     } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
